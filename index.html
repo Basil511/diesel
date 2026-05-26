@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FleetIQ — إدارة وقود الأسطول</title>
+<!-- CDN Libraries (external - require internet) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f0f0;--white:#ffffff;--sidebar:#ffffff;
+  --text:#111111;--text2:#666666;--text3:#aaaaaa;
+  --border:#e8e8e8;--dark:#1a1a1a;--dark2:#2d2d2d;
+  --green:#22c55e;--orange:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+  --sidebar-w:200px;
+  --transition-speed:0.25s;
+}
+/* ─── DARK THEME ─── */
+[data-theme="dark"]{
+  --bg:#111318;--white:#1c2030;--sidebar:#161928;
+  --text:#e8eaf0;--text2:#9099b5;--text3:#555e7a;
+  --border:#2a2f42;--dark:#e8eaf0;--dark2:#c5cadc;
+  --green:#34d399;--orange:#fbbf24;--red:#f87171;--blue:#60a5fa;
+}
+[data-theme="dark"] .card.dark{background:#0d1117;border-color:#0d1117}
+[data-theme="dark"] .card.dark2{background:#161928;border-color:#161928}
+[data-theme="dark"] .proj-card{background:#0d1117}
+[data-theme="dark"] .task-card.dark-t{background:#0d1117}
+[data-theme="dark"] thead th{background:#161928}
+[data-theme="dark"] .sidebar{border-left-color:var(--border)}
+[data-theme="dark"] .search-bar,[data-theme="dark"] .topbar{background:#161928}
+[data-theme="dark"] .ni.active{background:#e8eaf0;color:#111}
+[data-theme="dark"] .ni:hover{background:#252a3a}
+[data-theme="dark"] .plate{background:#252a3a;border-color:var(--border);color:var(--text)}
+[data-theme="dark"] .vup-row{background:#161928;border-color:var(--border)}
+[data-theme="dark"] .img-slot{background:#111318;border-color:var(--border)}
+[data-theme="dark"] .img-slot:hover{background:#1c2030}
+[data-theme="dark"] .vup-note textarea{background:#111318;border-color:var(--border);color:var(--text)}
+[data-theme="dark"] #excel-drop-zone{background:#161928;border-color:var(--border)}
+[data-theme="dark"] .s-section,[data-theme="dark"] .modal{background:var(--white)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#1c2030!important;color:var(--text)!important;border-color:var(--border)!important}
+[data-theme="dark"] .kpi-bar{background:#252a3a}
+[data-theme="dark"] .stat-bar{background:#252a3a}
+[data-theme="dark"] tbody tr{border-bottom-color:#252a3a}
+[data-theme="dark"] tbody tr:hover{background:#252a3a}
+[data-theme="dark"] .goal-item{border-bottom-color:#252a3a}
+[data-theme="dark"] .s-file-row{border-bottom-color:#252a3a}
+[data-theme="dark"] .alert-item{border-bottom-color:#252a3a}
+[data-theme="dark"] .stat-item{background:#1c2030;border-color:var(--border)}
+[data-theme="dark"] .task-card{background:#1c2030;border-color:var(--border)}
+[data-theme="dark"] .search-wrap,[data-theme="dark"] .filter-row .flt-btn{background:#161928;border-color:var(--border);color:var(--text2)}
+[data-theme="dark"] .flt-btn.active{background:#e8eaf0;color:#111;border-color:#e8eaf0}
+[data-theme="dark"] .search-results-drop{background:#1c2030;border-color:var(--border)}
+[data-theme="dark"] .sr-item:hover{background:#252a3a}
+[data-theme="dark"] .modal-ov{background:rgba(0,0,0,.6)}
+[data-theme="dark"] .page-settings{background:var(--bg)!important}
+[data-theme="dark"] .s-toggle{background:#2a2f42}
+[data-theme="dark"] .b-red{background:rgba(248,113,113,.12)}
+[data-theme="dark"] .b-green{background:rgba(52,211,153,.12)}
+[data-theme="dark"] .b-orange{background:rgba(251,191,36,.12)}
+[data-theme="dark"] .b-blue{background:rgba(96,165,250,.12)}
+[data-theme="dark"] .b-gray{background:rgba(140,148,180,.15)}
+[data-theme="dark"] #theme-dark{border-color:#fbbf24!important}
+[data-theme="dark"] .mini-stat-box{background:rgba(255,255,255,0.07)!important;border:1px solid var(--border)!important}
+[data-theme="dark"] .mini-stat-num{color:var(--text)!important}
+[data-theme="dark"] .mini-stat-sub{color:var(--text2)!important}
+[data-theme="dark"] .kpi-bar{background:#252a3a}
+[data-theme="dark"] .stat-bar{background:#252a3a}
+[data-theme="dark"] tbody tr:hover{background:#252a3a}
+[data-theme="dark"] .search-wrap,[data-theme="dark"] .filter-row .flt-btn{background:#161928;border-color:var(--border);color:var(--text2)}
+[data-theme="dark"] .search-results-drop{background:#1c2030;border-color:var(--border)}
+[data-theme="dark"] .sr-item:hover{background:#252a3a}
+[data-theme="dark"] .modal-ov{background:rgba(0,0,0,.6)}
+[data-theme="dark"] .page-settings{background:var(--bg)!important}
+
+html,body,*{transition:background-color var(--transition-speed) ease,border-color var(--transition-speed) ease,color var(--transition-speed) ease}
+html,body{height:100%;overflow:hidden;font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);direction:rtl}
+body{display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--sidebar);border-left:1px solid var(--border);height:100vh;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.logo{padding:18px 16px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:18px}
+.logo-text{font-size:15px;font-weight:900;color:var(--dark);letter-spacing:-.3px}
+.nav{flex:1;padding:12px 8px;overflow-y:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:1.2px;color:var(--text3);padding:0 8px;margin:14px 0 5px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:12.5px;color:var(--text2);transition:all .15s;margin-bottom:1px;width:100%;border:none;background:none;text-align:right;font-family:'Tajawal',sans-serif;font-weight:500;position:relative}
+.ni:hover{background:#f5f5f5;color:var(--text)}
+.ni.active{background:var(--dark);color:#fff}
+.ni svg{width:14px;height:14px;flex-shrink:0;opacity:.7}
+.ni.active svg{opacity:1}
+.ni-badge{margin-right:auto;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.07);color:var(--text2)}
+.ni.active .ni-badge{background:rgba(255,255,255,.2);color:#fff}
+.team-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sidebar-foot{padding:10px 8px 14px;border-top:1px solid var(--border)}
+
+/* ── SEARCH BAR (top of main) ── */
+.search-bar{padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:30}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:7px 12px;flex:1;max-width:320px;transition:border-color .15s}
+.search-wrap:focus-within{border-color:#aaa}
+.search-wrap svg{width:13px;height:13px;color:var(--text3);flex-shrink:0}
+.search-input{background:none;border:none;outline:none;font-size:12.5px;color:var(--text);font-family:'Tajawal',sans-serif;width:100%}
+.search-input::placeholder{color:var(--text3)}
+.search-kbd{font-size:9px;color:var(--text3);background:#e5e5e5;padding:1px 6px;border-radius:4px}
+.search-results-drop{position:absolute;top:calc(100% + 4px);right:20px;left:20px;max-width:340px;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:100;display:none;overflow:hidden}
+.search-results-drop.open{display:block}
+.sr-item{display:flex;align-items:center;gap:9px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border)}
+.sr-item:last-child{border:none}
+.sr-item:hover{background:#f9f9f9}
+.sr-icon{font-size:14px;width:22px;text-align:center}
+.sr-title{font-size:13px;font-weight:600;color:var(--dark)}
+.sr-sub{font-size:11px;color:var(--text3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+.content{flex:1;overflow-y:auto;padding:18px 20px}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+
+/* ── PAGE TITLE ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-title{font-size:20px;font-weight:900;color:var(--dark);letter-spacing:-.3px}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── PAGES ── */
+.page{display:none}.page.active{display:block}
+
+/* ── GRID ── */
+.g{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g-custom{grid-template-columns:2fr 1fr 1fr}
+.g-split{grid-template-columns:1.4fr 1fr}
+
+/* ── CARDS ── */
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:16px;overflow:hidden}
+.card.dark{background:var(--dark);border-color:var(--dark)}
+.card.dark2{background:var(--dark2);border-color:var(--dark2)}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ct{font-size:12.5px;font-weight:700;color:var(--text)}
+.ct.white{color:#fff}
+.ca{display:flex;align-items:center;gap:6px}
+.ic-btn{width:24px;height:24px;border-radius:6px;background:rgba(0,0,0,.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s}
+.ic-btn:hover{background:rgba(0,0,0,.12)}
+.ic-btn.white{background:rgba(255,255,255,.15)}
+.ic-btn.white:hover{background:rgba(255,255,255,.25)}
+.ic-btn svg{width:11px;height:11px;color:var(--text2)}
+.ic-btn.white svg{color:#fff}
+
+/* ── OVERVIEW CARDS ── */
+.big-nums{display:flex;align-items:flex-start;gap:18px;margin-bottom:12px}
+.big-n{font-size:38px;font-weight:900;color:#fff;line-height:1;letter-spacing:-.5px}
+.big-lbl{font-size:9px;color:rgba(255,255,255,.55);max-width:55px;line-height:1.3;margin-top:7px}
+.sep{width:1px;background:rgba(255,255,255,.15);height:38px;margin-top:4px}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mini-c{background:rgba(255,255,255,.1);border-radius:10px;padding:9px 7px;text-align:center;cursor:pointer;transition:background .15s}
+.mini-c:hover{background:rgba(255,255,255,.18)}
+.mini-ic{font-size:15px;margin-bottom:2px}
+.mini-v{font-size:18px;font-weight:900;color:#fff}
+.mini-l{font-size:8.5px;color:rgba(255,255,255,.5);margin-top:1px}
+
+/* KPI */
+.kpi-val{font-size:28px;font-weight:900;color:var(--dark);line-height:1;letter-spacing:-.5px}
+.kpi-lbl{font-size:11px;color:var(--text3);margin-bottom:8px}
+.kpi-change{font-size:10.5px;margin-top:4px;display:flex;align-items:center;gap:3px;font-weight:600}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--orange)}
+.kpi-bar{height:4px;background:#f0f0f0;border-radius:2px;margin-top:10px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* CHART BOXES */
+.chart-box{position:relative}
+.chart-box canvas{width:100%!important;max-height:280px}
+.ch-wrap{position:relative;width:100%}
+
+/* DONUT WRAPPER */
+.donut-wrap{position:relative;width:90px;height:90px}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.donut-pct{font-size:17px;font-weight:900;color:var(--dark)}
+.donut-sub{font-size:9px;color:var(--text3)}
+
+/* LEGEND */
+.legend{display:flex;flex-direction:column;gap:8px;flex:1}
+.leg-item{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.leg-left{display:flex;align-items:center;gap:7px;color:var(--text2)}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.leg-val{font-weight:700;color:var(--text);font-size:12px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{padding:8px 10px;text-align:right;font-size:10px;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{color:var(--text)}
+tbody tr{border-bottom:1px solid #fafafa;transition:background .1s;cursor:pointer}
+tbody tr:hover{background:#fafafa}
+tbody td{padding:9px 10px;color:var(--text2);font-size:12px;vertical-align:middle}
+.plate{font-size:11px;background:#f5f5f5;border:1px solid var(--border);padding:2px 7px;border-radius:5px;direction:ltr;display:inline-block;color:var(--dark);font-weight:600}
+.badge{font-size:9.5px;padding:2px 8px;border-radius:8px;font-weight:700;display:inline-block}
+.b-red{background:#fff1f0;color:var(--red);border:1px solid #fecaca}
+.b-green{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.b-orange{background:#fffbeb;color:var(--orange);border:1px solid #fde68a}
+.b-blue{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+.b-gray{background:#f5f5f5;color:var(--text2);border:1px solid var(--border)}
+.v-name{font-weight:600;color:var(--dark);font-size:12px}
+.cost-v{font-weight:700;color:var(--dark)}
+
+/* GOALS */
+.goal-item{display:flex;align-items:center;gap:9px;padding:7px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.goal-item:last-child{border:none}
+.goal-cb{width:16px;height:16px;border-radius:5px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s}
+.goal-cb.done{background:var(--dark);border-color:var(--dark)}
+.goal-cb.done svg{display:block}
+.goal-cb svg{display:none;width:9px;height:9px;color:#fff}
+.goal-text{font-size:12px;color:var(--text2);transition:all .15s}
+.goal-text.done{text-decoration:line-through;color:var(--text3)}
+
+/* TASKS */
+.tasks-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.tasks-row::-webkit-scrollbar{display:none}
+.task-card{min-width:145px;max-width:145px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:11px;cursor:pointer;transition:all .18s;flex-shrink:0;position:relative}
+.task-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08);transform:translateY(-2px)}
+.task-card.dark-t{background:var(--dark);border-color:var(--dark)}
+.task-card svg.task-menu{width:11px;height:11px;color:var(--text3);position:absolute;top:10px;left:10px}
+.task-ic{font-size:18px;margin-bottom:7px}
+.task-lbl{font-size:11.5px;font-weight:700;color:var(--dark);line-height:1.3;margin-bottom:5px}
+.task-card.dark-t .task-lbl{color:#fff}
+.task-date{font-size:9.5px;color:var(--text3);display:flex;align-items:center;gap:3px}
+.task-add{min-width:110px;border:1.5px dashed var(--border);background:transparent;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.task-add:hover{border-color:#bbb;background:#f9f9f9}
+.task-add svg{width:18px;height:18px;color:var(--text3)}
+.task-add span{font-size:10.5px;color:var(--text3)}
+
+/* PROJ */
+.proj-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.proj-card{background:var(--dark);border-radius:12px;padding:13px;cursor:pointer;transition:all .18s}
+.proj-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.proj-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.proj-title{font-size:12.5px;font-weight:700;color:#fff}
+.proj-ring-wrap{position:relative;width:34px;height:34px;flex-shrink:0}
+.proj-ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff}
+.proj-status{font-size:10px;color:rgba(255,255,255,.45);display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.proj-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.proj-desc{font-size:10.5px;color:rgba(255,255,255,.4);line-height:1.45}
+
+/* ALERT LIST */
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.alert-item:last-child{border:none}
+.alert-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.alert-title{font-size:12px;font-weight:600;color:var(--dark)}
+.alert-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.alert-badge{margin-right:auto;flex-shrink:0}
+
+/* INTEGRATION */
+.int-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .12s;border:1px solid var(--border);margin-bottom:8px}
+.int-item:hover{background:#f9f9f9}
+.int-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.int-title{font-size:12.5px;font-weight:600;color:var(--dark)}
+.int-sub{font-size:10.5px;color:var(--text3)}
+.int-status{margin-right:auto;font-size:10px;font-weight:600;flex-shrink:0}
+
+/* STATS GRID */
+.stat-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:6px}
+.stat-num{font-size:22px;font-weight:900;color:var(--dark);letter-spacing:-.3px}
+.stat-lbl{font-size:10.5px;color:var(--text3)}
+.stat-bar{height:3px;background:#f0f0f0;border-radius:2px;overflow:hidden;margin-top:4px}
+.stat-bar-f{height:100%;border-radius:2px}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-ov.open{display:flex;animation:fi .15s ease}
+.modal{background:var(--white);border-radius:16px;padding:22px;min-width:340px;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.15);animation:su .18s ease}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes su{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:14px;font-weight:800;color:var(--dark)}
+.modal-x{width:26px;height:26px;border-radius:7px;background:#f5f5f5;border:none;cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:background .12s}
+.modal-x:hover{background:#eee}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:.3px}
+.field input,.field select,.field textarea{width:100%;background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:'Tajawal',sans-serif;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:#888}
+.mbtns{display:flex;gap:7px;margin-top:14px}
+.mbtn{flex:1;padding:9px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif;transition:all .15s;border:none}
+.mbtn.p{background:var(--dark);color:#fff}
+.mbtn.p:hover{background:#333}
+.mbtn.s{background:#f5f5f5;color:var(--text);border:1px solid var(--border)}
+.mbtn.s:hover{background:#eee}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--dark);color:#fff;padding:9px 16px;border-radius:10px;font-size:12.5px;font-weight:500;z-index:500;transition:transform .25s ease;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* RANGE FILTER */
+.filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.flt-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--text2);font-size:11.5px;cursor:pointer;font-family:'Tajawal',sans-serif;transition:all .15s}
+.flt-btn.active,.flt-btn:hover{background:var(--dark);color:#fff;border-color:var(--dark)}
+
+/* SETTINGS */
+.s-tab{padding:8px 16px;border:none;background:none;font-size:12.5px;color:var(--text2);cursor:pointer;font-family:'Tajawal',sans-serif;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.s-tab:hover{color:var(--text)}
+.s-tab.active{color:var(--dark);border-bottom-color:var(--dark);font-weight:700}
+.s-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text2)}
+.s-lbl{font-size:12px;color:var(--text2)}
+.s-sel{background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--dark);font-family:'Tajawal',sans-serif;outline:none;cursor:pointer}
+.s-toggle{width:36px;height:20px;border-radius:10px;background:#e5e7eb;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.s-toggle.on{background:var(--dark)}
+.s-knob{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;transition:right .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.s-toggle.on .s-knob{right:calc(100% - 18px)}
+.s-file-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);cursor:pointer;transition:color .12s}
+.s-file-row:last-child{border:none}
+.s-file-row:hover{color:var(--dark)}
+.field{margin-bottom:0}
+.field label{display:block;font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:.3px}
+/* UPLOADS */
+.vup-row{background:#fafafa;border:1px solid var(--border);border-radius:12px;padding:14px;transition:border-color .15s}
+.vup-row:hover{border-color:#bbb}
+.vup-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.vup-imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.img-slot{border:2px dashed var(--border);border-radius:10px;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;background:#fff;text-align:center;padding:10px}
+.img-slot:hover{border-color:#888;background:#f9f9f9}
+.img-slot.has-img{border-style:solid;border-color:var(--green);padding:0}
+.img-slot img{width:100%;height:110px;object-fit:cover;border-radius:8px;display:block}
+.img-slot-label{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px}
+.img-slot-icon{font-size:22px;margin-bottom:4px}
+.img-slot-sub{font-size:10px;color:var(--text3)}
+.img-remove{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:5px;background:rgba(239,68,68,.9);color:#fff;border:none;cursor:pointer;font-size:12px;display:none;align-items:center;justify-content:center;z-index:2}
+.img-slot.has-img:hover .img-remove{display:flex}
+.vup-note{margin-top:10px}
+.vup-note textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:'Tajawal',sans-serif;outline:none;resize:none;height:52px;color:var(--text);transition:border-color .15s}
+.vup-note textarea:focus{border-color:#888}
+canvas{display:block}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: إنشاء -->
+<div class="modal-ov" id="modal-create">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">➕ إضافة تعبئة جديدة</div><button class="modal-x" onclick="closeModal('modal-create')">✕</button></div>
+    <div class="field"><label>رقم اللوحة</label><input placeholder="مثال: 1234-ABC"></div>
+    <div class="field"><label>نوع الوقود</label><select><option>بنزين 91</option><option>ديزل</option></select></div>
+    <div class="field"><label>الكمية (لتر)</label><input type="number" placeholder="0"></div>
+    <div class="field"><label>التكلفة (ريال)</label><input type="number" placeholder="0"></div>
+    <div class="field"><label>اسم السائق</label><input placeholder="الاسم الكامل"></div>
+    <div class="mbtns">
+      <button class="mbtn p" onclick="toast('✅ تم الحفظ بنجاح');closeModal('modal-create')">حفظ</button>
+      <button class="mbtn s" onclick="closeModal('modal-create')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: مركبة -->
+<div class="modal-ov" id="modal-vehicle">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="mv-title">تفاصيل المركبة</div><button class="modal-x" onclick="closeModal('modal-vehicle')">✕</button></div>
+    <div id="mv-body"></div>
+    <div class="mbtns">
+      <button class="mbtn p" onclick="toast('📋 تم إنشاء طلب مراجعة');closeModal('modal-vehicle')">طلب مراجعة</button>
+      <button class="mbtn s" onclick="closeModal('modal-vehicle')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Integration -->
+<div class="modal-ov" id="modal-int">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="int-title">ربط الخدمة</div><button class="modal-x" onclick="closeModal('modal-int')">✕</button></div>
+    <div id="int-body"></div>
+    <div class="mbtns">
+      <button class="mbtn p" onclick="toast('🔗 تم الربط بنجاح');closeModal('modal-int')">ربط الحساب</button>
+      <button class="mbtn s" onclick="closeModal('modal-int')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: تقرير PDF -->
+<div class="modal-ov" id="modal-report">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">📊 ملخص التقرير — مارس 2026</div><button class="modal-x" onclick="closeModal('modal-report')">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--text3)">إجمالي التكلفة</span><strong>65,278 ريال</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--text3)">بنزين 91</span><strong>19,533 ريال — 8,877 لتر</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--text3)">ديزل</span><strong>45,745 ريال — 25,110 لتر</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--text3)">إجمالي المركبات</span><strong>50 مركبة</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span style="color:var(--text3)">عمليات التعبئة</span><strong>441 عملية</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:12.5px"><span style="color:var(--text3)">بدون تتبع GPS</span><strong style="color:var(--red)">8 مركبات</strong></div>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn p" onclick="toast('⬇️ جاري تحميل PDF...');closeModal('modal-report')">تحميل PDF</button>
+      <button class="mbtn s" onclick="closeModal('modal-report')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;width:100%;height:100vh">
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="logo">
+    <span class="logo-mark">⛽</span>
+    <span class="logo-text">FleetIQ</span>
+  </div>
+  <nav class="nav">
+    <button class="ni active" data-page="overview" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="ni" data-page="consumption" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-7"/></svg>
+      الاستهلاك
+      <span class="ni-badge">50</span>
+    </button>
+    <button class="ni" data-page="comparisons" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      المقارنات
+    </button>
+    <button class="ni" data-page="fleet" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+      تأثير الأسطول
+    </button>
+    <button class="ni" data-page="quality" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      جودة المؤشرات
+    </button>
+    <button class="ni" data-page="uploads" onclick="goPage(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      رفع الملفات
+    </button>
+
+    <div class="nav-sec">TEAMS</div>
+    <button class="ni" data-page="trucks" onclick="goPage(this)">
+      <span class="team-dot" style="background:#1a1a1a"></span>
+      الشاحنات الثقيلة
+    </button>
+    <button class="ni" data-page="transport" onclick="goPage(this)">
+      <span class="team-dot" style="background:#f59e0b"></span>
+      مركبات النقل
+    </button>
+  </nav>
+  <div class="sidebar-foot">
+    <button class="ni" onclick="goSettings(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09"/></svg>
+      الإعدادات
+    </button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <!-- SEARCH -->
+  <div class="search-bar" style="position:relative">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input class="search-input" id="s-input" placeholder="ابحث عن مركبة، سائق، أو صفحة..." oninput="doSearch(this.value)" onfocus="openDrop()" autocomplete="off">
+      <span class="search-kbd">⌘K</span>
+    </div>
+    <div class="search-results-drop" id="s-drop"></div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════════ OVERVIEW ══════════════ -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <div><div class="page-title">مرحباً! 👋</div><div class="page-sub">لوحة تحكم وقود الأسطول — مارس 2026</div></div>
+      <div style="font-size:11.5px;color:var(--text3);background:var(--white);border:1px solid var(--border);border-radius:8px;padding:6px 12px">📅 مارس 20 — أبريل 20, 2026</div>
+    </div>
+
+    <!-- ROW 1 -->
+    <div class="g g-custom" style="margin-bottom:12px">
+      <!-- DARK OVERALL -->
+      <div class="card dark">
+        <div class="ch">
+          <span class="ct white">المعلومات العامة</span>
+          <div class="ca">
+            <button class="ic-btn white" onclick="toast('🔗 تم نسخ رابط المشاركة')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+            <button class="ic-btn white" onclick="openModal('modal-report')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+          </div>
+        </div>
+        <div class="big-nums">
+          <div><div class="big-n">65K</div><div class="big-lbl">ريال إجمالي التكلفة</div></div>
+          <div class="sep"></div>
+          <div><div class="big-n">8</div><div class="big-lbl">مركبات بدون تتبع</div></div>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-c" onclick="goPageById('consumption');toast('🚗 عرض المركبات')"><div class="mini-ic">🚗</div><div class="mini-v">50</div><div class="mini-l">المركبات</div></div>
+          <div class="mini-c" onclick="toast('🔄 441 عملية تعبئة')"><div class="mini-ic">🔄</div><div class="mini-v">441</div><div class="mini-l">تعبئة</div></div>
+          <div class="mini-c" onclick="toast('✅ 42 مركبة ضمن الطبيعي')"><div class="mini-ic">✅</div><div class="mini-v">42</div><div class="mini-l">طبيعية</div></div>
+        </div>
+      </div>
+
+      <!-- WEEKLY -->
+      <div class="card chart-box">
+        <div class="ch">
+          <span class="ct">تقدم الأسبوع</span>
+          <div class="ca">
+            <span style="background:#eef9f0;color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px">+34%</span>
+            <button class="ic-btn" onclick="refreshWeekly()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:6px">
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)"><span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block"></span>بنزين</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2)"><span style="width:7px;height:7px;border-radius:50%;background:#1a1a1a;display:inline-block"></span>ديزل</span>
+        </div>
+        <div style="position:relative;height:90px;width:100%"><canvas id="weekly-chart"></canvas></div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px">
+          <span style="font-size:9px;color:var(--text3)">أحد</span><span style="font-size:9px;color:var(--text3)">اثنين</span><span style="font-size:9px;color:var(--text3)">ثلاثاء</span><span style="font-size:9px;color:var(--text3)">أربعاء</span><span style="font-size:9px;color:var(--text3)">خميس</span><span style="font-size:9px;color:var(--text3)">جمعة</span><span style="font-size:9px;color:var(--text3)">سبت</span>
+        </div>
+      </div>
+
+      <!-- MONTH DONUT -->
+      <div class="card">
+        <div class="ch">
+          <span class="ct">تقدم الشهر</span>
+          <button class="ic-btn" onclick="toast('📈 فتح التحليل الكامل')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></button>
+        </div>
+        <div style="font-size:10px;color:var(--green);font-weight:600;margin-bottom:10px">+20% مقارنة بالشهر الماضي</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="legend">
+            <div class="leg-item"><div class="leg-left"><div class="leg-dot" style="background:#f59e0b"></div>بنزين 91</div><div class="leg-val">30%</div></div>
+            <div class="leg-item"><div class="leg-left"><div class="leg-dot" style="background:#1a1a1a"></div>ديزل</div><div class="leg-val">70%</div></div>
+            <div class="leg-item"><div class="leg-left"><div class="leg-dot" style="background:#22c55e"></div>ضمن الميزانية</div><div class="leg-val">✓</div></div>
+          </div>
+          <div class="donut-wrap"><canvas id="month-donut"></canvas><div class="donut-center"><div class="donut-pct">120%</div><div class="donut-sub">الأداء</div></div></div>
+        </div>
+        <button style="width:100%;margin-top:10px;background:#f5f5f5;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:11.5px;font-weight:600;color:var(--text);cursor:pointer;font-family:'Tajawal',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s" onmouseover="this.style.background='#eee'" onmouseout="this.style.background='#f5f5f5'" onclick="openModal('modal-report')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          تحميل التقرير
+        </button>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="g g-split" style="margin-bottom:12px">
+      <!-- GOALS -->
+      <div class="card">
+        <div class="ch">
+          <span class="ct">أهداف الشهر:</span>
+          <div class="ca">
+            <button class="ic-btn" onclick="addGoal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="ic-btn" onclick="toast('✏️ تعديل الأهداف')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          </div>
+        </div>
+        <div id="goals-list">
+          <div class="goal-item" onclick="toggleGoal(this)"><div class="goal-cb done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="goal-text done">رفع تقرير مارس 2026</span></div>
+          <div class="goal-item" onclick="toggleGoal(this)"><div class="goal-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="goal-text">ربط 8 مركبات بنظام التتبع</span></div>
+          <div class="goal-item" onclick="toggleGoal(this)"><div class="goal-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="goal-text">مراجعة الحد الأعلى للديزل</span></div>
+          <div class="goal-item" onclick="toggleGoal(this)"><div class="goal-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="goal-text">تقليص تكلفة الأسطول 5%</span></div>
+        </div>
+      </div>
+      <!-- TASKS -->
+      <div class="card">
+        <div class="ch">
+          <span class="ct">مركبات تحتاج متابعة (3)</span>
+          <span style="font-size:10.5px;color:var(--text3);cursor:pointer" onclick="goPageById('insights')">فتح الكل ›</span>
+        </div>
+        <div class="tasks-row">
+          <div class="task-card" data-task="volvo">
+            <svg class="task-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            <div class="task-ic">⚠️</div>
+            <div class="task-lbl">Volvo FH<br>3288-ARQ</div>
+            <div class="task-date">عاجل</div>
+          </div>
+          <div class="task-card" data-task="canter">
+            <svg class="task-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            <div class="task-ic">🛑</div>
+            <div class="task-lbl">Isuzu Canter<br>8982-ABL</div>
+            <div class="task-date">02.04.2026</div>
+          </div>
+          <div class="task-card" data-task="hilux">
+            <svg class="task-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            <div class="task-ic">📍</div>
+            <div class="task-lbl">Hilux<br>7147-BAT</div>
+            <div class="task-date">اليوم</div>
+          </div>
+          <div class="task-add" onclick="openModal('modal-create')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>إضافة</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: PROJECTS -->
+    <div class="card">
+      <div class="ch">
+        <span class="ct">آخر المجموعات</span>
+        <div class="ca">
+          <button class="flt-btn active" onclick="setFlt(this)">الكل</button>
+          <button class="flt-btn" onclick="setFlt(this)">ديزل</button>
+          <button class="flt-btn" onclick="setFlt(this)">بنزين</button>
+        </div>
+      </div>
+      <div class="proj-g">
+        <div class="proj-card" onclick="goPageById('trucks');toast('🚛 الشاحنات الثقيلة')">
+          <div class="proj-head"><div><div class="proj-title">ديزل — الحد الأعلى</div><div class="proj-status"><span class="proj-dot" style="background:#ef4444"></span>تجاوز الحد</div></div><div class="proj-ring-wrap"><canvas id="r1"></canvas><div class="proj-ring-val">85%</div></div></div>
+          <div class="proj-desc">15 مركبة — 39,149 ريال — 21,373 لتر</div>
+        </div>
+        <div class="proj-card" onclick="goPageById('consumption');toast('⛽ بنزين 91')">
+          <div class="proj-head"><div><div class="proj-title">بنزين 91 — الأعلى</div><div class="proj-status"><span class="proj-dot" style="background:#f59e0b"></span>مكتمل</div></div><div class="proj-ring-wrap"><canvas id="r2"></canvas><div class="proj-ring-val">62%</div></div></div>
+          <div class="proj-desc">10 مركبات — 16,121 ريال — 7,426 لتر</div>
+        </div>
+        <div class="proj-card" onclick="goPageById('transport');toast('✅ مركبات الأدنى')">
+          <div class="proj-head"><div><div class="proj-title">الحد الأدنى — الكل</div><div class="proj-status"><span class="proj-dot" style="background:#22c55e"></span>ضمن المعدل</div></div><div class="proj-ring-wrap"><canvas id="r3"></canvas><div class="proj-ring-val">28%</div></div></div>
+          <div class="proj-desc">25 مركبة — 10,007 ريال — 5,114 لتر</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ CONSUMPTION ══════════════ -->
+  <div class="page" id="page-consumption">
+    <div class="page-header">
+      <div><div class="page-title">الاستهلاك التفصيلي</div><div class="page-sub">جميع المركبات — 50 مركبة</div></div>
+      <div style="font-size:11.5px;color:var(--text3);background:var(--white);border:1px solid var(--border);border-radius:8px;padding:6px 12px">📅 مارس 20 — أبريل 20, 2026</div>
+    </div>
+
+    <!-- KPIs مقسّمة: بنزين vs ديزل -->
+    <div class="g g2" style="margin-bottom:12px">
+      <!-- بنزين -->
+      <div class="card" style="border-right:3px solid var(--orange)">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+          <span style="font-size:13px">⛽</span>
+          <span style="font-size:13px;font-weight:700;color:var(--dark)">بنزين 91</span>
+          <span style="font-size:11px;color:var(--text3);margin-right:auto">20 مركبة</span>
+        </div>
+        <div class="g g2" style="gap:8px">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">إجمالي التكلفة</div>
+            <div style="font-size:20px;font-weight:900;color:var(--dark)">19,533 <span style="font-size:11px;color:var(--text3)">ريال</span></div>
+            <div style="height:3px;background:#f5f5f5;border-radius:2px;margin-top:6px"><div style="width:30%;height:100%;background:var(--orange);border-radius:2px"></div></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">الاستهلاك</div>
+            <div style="font-size:20px;font-weight:900;color:var(--dark)">8,877 <span style="font-size:11px;color:var(--text3)">لتر</span></div>
+            <div style="height:3px;background:#f5f5f5;border-radius:2px;margin-top:6px"><div style="width:26%;height:100%;background:var(--orange);border-radius:2px;opacity:.5"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div class="mini-stat-box" style="flex:1;border-radius:8px;padding:8px 10px;text-align:center;background:#fffbeb">
+            <div style="font-size:9px;color:var(--orange);font-weight:700;margin-bottom:2px">الحد الأعلى</div>
+            <div class="mini-stat-num" style="font-size:16px;font-weight:900">10</div>
+            <div class="mini-stat-sub" style="font-size:9px;color:var(--text3)">16,121 ريال</div>
+          </div>
+          <div class="mini-stat-box" style="flex:1;border-radius:8px;padding:8px 10px;text-align:center;background:#f0fdf4">
+            <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:2px">الحد الأدنى</div>
+            <div class="mini-stat-num" style="font-size:16px;font-weight:900">10</div>
+            <div class="mini-stat-sub" style="font-size:9px;color:var(--text3)">3,412 ريال</div>
+          </div>
+        </div>
+      </div>
+      <!-- ديزل -->
+      <div class="card" style="border-right:3px solid var(--dark)">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+          <span style="font-size:13px">🚛</span>
+          <span style="font-size:13px;font-weight:700;color:var(--dark)">ديزل</span>
+          <span style="font-size:11px;color:var(--text3);margin-right:auto">30 مركبة</span>
+        </div>
+        <div class="g g2" style="gap:8px">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">إجمالي التكلفة</div>
+            <div style="font-size:20px;font-weight:900;color:var(--dark)">45,745 <span style="font-size:11px;color:var(--text3)">ريال</span></div>
+            <div style="height:3px;background:#f5f5f5;border-radius:2px;margin-top:6px"><div style="width:70%;height:100%;background:var(--dark);border-radius:2px"></div></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">الاستهلاك</div>
+            <div style="font-size:20px;font-weight:900;color:var(--dark)">25,110 <span style="font-size:11px;color:var(--text3)">لتر</span></div>
+            <div style="height:3px;background:#f5f5f5;border-radius:2px;margin-top:6px"><div style="width:74%;height:100%;background:var(--dark);border-radius:2px;opacity:.5"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div class="mini-stat-box" style="flex:1;border-radius:8px;padding:8px 10px;text-align:center;background:#fff1f0">
+            <div style="font-size:9px;color:var(--red);font-weight:700;margin-bottom:2px">الحد الأعلى</div>
+            <div class="mini-stat-num" style="font-size:16px;font-weight:900">15</div>
+            <div class="mini-stat-sub" style="font-size:9px;color:var(--text3)">39,149 ريال</div>
+          </div>
+          <div class="mini-stat-box" style="flex:1;border-radius:8px;padding:8px 10px;text-align:center;background:#f0fdf4">
+            <div style="font-size:9px;color:var(--green);font-weight:700;margin-bottom:2px">الحد الأدنى</div>
+            <div class="mini-stat-num" style="font-size:16px;font-weight:900">15</div>
+            <div class="mini-stat-sub" style="font-size:9px;color:var(--text3)">6,596 ريال</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- فلاتر الجدول -->
+    <div class="filter-row">
+      <button class="flt-btn active" onclick="filterTbl('all',this)">الكل</button>
+      <button class="flt-btn" onclick="filterTbl('petrol',this)">⛽ بنزين 91</button>
+      <button class="flt-btn" onclick="filterTbl('diesel',this)">🚛 ديزل</button>
+      <button class="flt-btn" onclick="filterTbl('high',this)">🔺 الحد الأعلى</button>
+      <button class="flt-btn" onclick="filterTbl('low',this)">🔻 الحد الأدنى</button>
+      <button class="flt-btn" onclick="filterTbl('petrol_high',this)">⛽ بنزين — أعلى</button>
+      <button class="flt-btn" onclick="filterTbl('petrol_low',this)">⛽ بنزين — أدنى</button>
+      <button class="flt-btn" onclick="filterTbl('diesel_high',this)">🚛 ديزل — أعلى</button>
+      <button class="flt-btn" onclick="filterTbl('diesel_low',this)">🚛 ديزل — أدنى</button>
+    </div>
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th onclick="sortTbl('num')"># ↕</th><th>اللوحة</th><th>النوع</th><th>الماركة</th><th>السائق</th><th onclick="sortTbl('fill_count')">التعبئة ↕</th><th onclick="sortTbl('total_cost')">التكلفة ↕</th><th onclick="sortTbl('liters')">الليتر ↕</th><th>المجموعة</th><th>الوقود</th><th>ملاحظات</th></tr></thead>
+      <tbody id="main-tbody"></tbody>
+    </table></div></div>
+  </div>
+
+  <!-- ══════════════ COMPARISONS ══════════════ -->
+  <div class="page" id="page-comparisons">
+    <div class="page-header">
+      <div><div class="page-title">المقارنات</div><div class="page-sub">بنزين vs ديزل — الحد الأعلى vs الأدنى</div></div>
+      <div style="font-size:11.5px;color:var(--text3);background:var(--white);border:1px solid var(--border);border-radius:8px;padding:6px 12px">📅 مارس 20 — أبريل 20, 2026</div>
+    </div>
+    <div class="g g2" style="margin-bottom:12px">
+      <div class="card chart-box"><div class="ch"><span class="ct">التكلفة الإجمالية (ريال)</span></div><div style="position:relative;height:200px"><canvas id="cmp-cost"></canvas></div></div>
+      <div class="card chart-box"><div class="ch"><span class="ct">الاستهلاك بالليتر</span></div><div style="position:relative;height:200px"><canvas id="cmp-liters"></canvas></div></div>
+    </div>
+    <div class="g g2" style="margin-bottom:12px">
+      <div class="card chart-box"><div class="ch"><span class="ct">توزيع أنواع مركبات البنزين</span></div><div style="position:relative;height:220px"><canvas id="petrol-types"></canvas></div></div>
+      <div class="card chart-box"><div class="ch"><span class="ct">توزيع أنواع مركبات الديزل</span></div><div style="position:relative;height:220px"><canvas id="diesel-types"></canvas></div></div>
+    </div>
+    <div class="card chart-box"><div class="ch"><span class="ct">أعلى 10 مركبات استهلاكاً</span></div><div style="position:relative;height:200px"><canvas id="top10-chart"></canvas></div></div>
+  </div>
+
+  <!-- ══════════════ FLEET IMPACT ══════════════ -->
+  <div class="page" id="page-fleet">
+    <div class="page-header"><div><div class="page-title">تأثير الأسطول</div><div class="page-sub">تحليل الأداء والانحراف</div></div></div>
+    <div class="g g4" style="margin-bottom:12px">
+      <div class="stat-item"><div class="stat-lbl">مركبات فوق الحد</div><div class="stat-num" style="color:var(--red)">25</div><div class="stat-bar"><div class="stat-bar-f" style="width:50%;background:var(--red)"></div></div></div>
+      <div class="stat-item"><div class="stat-lbl">مركبات ضمن الحد</div><div class="stat-num" style="color:var(--green)">25</div><div class="stat-bar"><div class="stat-bar-f" style="width:50%;background:var(--green)"></div></div></div>
+      <div class="stat-item"><div class="stat-lbl">بدون تتبع GPS</div><div class="stat-num" style="color:var(--orange)">8</div><div class="stat-bar"><div class="stat-bar-f" style="width:16%;background:var(--orange)"></div></div></div>
+      <div class="stat-item"><div class="stat-lbl">مركبات موقوفة</div><div class="stat-num">3</div><div class="stat-bar"><div class="stat-bar-f" style="width:6%;background:var(--dark)"></div></div></div>
+    </div>
+    <div class="g g2" style="margin-bottom:12px">
+      <div class="card chart-box"><div class="ch"><span class="ct">الانحراف عن المتوسط (لتر)</span></div><div style="position:relative;height:180px"><canvas id="fleet-scatter"></canvas></div></div>
+      <div class="card chart-box"><div class="ch"><span class="ct">Trend — تكلفة الشهور</span></div><div style="position:relative;height:180px"><canvas id="fleet-trend"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">أعلى 5 سائقين استهلاكاً</span></div>
+      <div id="drivers-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ QUALITY ══════════════ -->
+  <div class="page" id="page-quality">
+    <div class="page-header"><div><div class="page-title">جودة المؤشرات</div><div class="page-sub">KPIs تفصيلية — مارس 2026</div></div></div>
+    <div class="g g2" style="margin-bottom:12px">
+      <div class="card chart-box"><div class="ch"><span class="ct">تكلفة الوقود أسبوعياً</span><div class="ca"><button class="flt-btn active" onclick="setFlt(this)">أسبوعي</button><button class="flt-btn" onclick="setFlt(this)">شهري</button></div></div><div style="position:relative;height:160px"><canvas id="q-weekly"></canvas></div></div>
+      <div class="card">
+        <div class="ch"><span class="ct">مؤشرات الجودة</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">نسبة الامتثال للحد</span><strong>84%</strong></div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:84%;background:var(--green)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">التغطية بنظام التتبع</span><strong>84%</strong></div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:84%;background:var(--blue)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">كفاءة الاستهلاك</span><strong>71%</strong></div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:71%;background:var(--orange)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2)">مركبات موقوفة</span><strong style="color:var(--red)">6%</strong></div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:6%;background:var(--red)"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card chart-box"><div class="ch"><span class="ct">مقارنة الماركات (متوسط التكلفة)</span></div><div style="position:relative;height:140px"><canvas id="brand-chart"></canvas></div></div>
+  </div>
+
+  <!-- ══════════════ INSIGHTS (ALERTS) ══════════════ -->
+  <div class="page" id="page-insights">
+    <div class="page-header"><div><div class="page-title">التنبيهات والملاحظات</div><div class="page-sub">مركبات تحتاج إجراء</div></div></div>
+    <div class="card">
+      <div class="ch"><span class="ct">قائمة التنبيهات (11)</span></div>
+      <div id="alerts-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TRUCKS TEAM ══════════════ -->
+  <div class="page" id="page-trucks">
+    <div class="page-header"><div><div class="page-title">🚛 الشاحنات الثقيلة</div><div class="page-sub">مركبات الديزل — الحد الأعلى (15 مركبة)</div></div></div>
+    <div class="g g4" style="margin-bottom:12px">
+      <div class="stat-item"><div class="stat-lbl">إجمالي التكلفة</div><div class="stat-num">39,149<span style="font-size:11px;color:var(--text3)"> ريال</span></div></div>
+      <div class="stat-item"><div class="stat-lbl">إجمالي الاستهلاك</div><div class="stat-num">21,373<span style="font-size:11px;color:var(--text3)"> لتر</span></div></div>
+      <div class="stat-item"><div class="stat-lbl">إجمالي التعبئة</div><div class="stat-num">236<span style="font-size:11px;color:var(--text3)"> عملية</span></div></div>
+      <div class="stat-item"><div class="stat-lbl">أعلى مركبة</div><div class="stat-num" style="font-size:14px">Volvo FH</div><div class="kpi-change down">5,100 ريال</div></div>
+    </div>
+    <div class="card chart-box" style="margin-bottom:12px"><div class="ch"><span class="ct">استهلاك الشاحنات بالليتر</span></div><div style="position:relative;height:150px"><canvas id="trucks-chart"></canvas></div></div>
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>اللوحة</th><th>الماركة</th><th>السائق</th><th>التعبئة</th><th>التكلفة</th><th>الليتر</th><th>ملاحظات</th></tr></thead>
+      <tbody id="trucks-tbody"></tbody>
+    </table></div></div>
+  </div>
+
+  <!-- ══════════════ TRANSPORT TEAM ══════════════ -->
+  <div class="page" id="page-transport">
+    <div class="page-header"><div><div class="page-title">🚗 مركبات النقل</div><div class="page-sub">بنزين + ديزل — الحد الأدنى (25 مركبة)</div></div></div>
+    <div class="g g4" style="margin-bottom:12px">
+      <div class="stat-item"><div class="stat-lbl">إجمالي التكلفة</div><div class="stat-num">10,007<span style="font-size:11px;color:var(--text3)"> ريال</span></div></div>
+      <div class="stat-item"><div class="stat-lbl">إجمالي الاستهلاك</div><div class="stat-num">5,114<span style="font-size:11px;color:var(--text3)"> لتر</span></div></div>
+      <div class="stat-item"><div class="stat-lbl">موقوفة</div><div class="stat-num" style="color:var(--red)">3</div></div>
+      <div class="stat-item"><div class="stat-lbl">بدون تتبع</div><div class="stat-num" style="color:var(--orange)">6</div></div>
+    </div>
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>اللوحة</th><th>الماركة</th><th>السائق</th><th>التعبئة</th><th>التكلفة</th><th>الليتر</th><th>الوقود</th><th>ملاحظات</th></tr></thead>
+      <tbody id="transport-tbody"></tbody>
+    </table></div></div>
+  </div>
+
+  <!-- ══════════════ UPLOADS ══════════════ -->
+  <div class="page" id="page-uploads">
+    <div class="page-header">
+      <div><div class="page-title">📁 رفع الملفات</div><div class="page-sub">Excel الشهري + صور العدادات</div></div>
+      <div id="upload-period-badge" style="font-size:11.5px;color:var(--text3);background:var(--white);border:1px solid var(--border);border-radius:8px;padding:6px 12px;display:none"></div>
+    </div>
+
+    <!-- ── EXCEL SECTION ── -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch">
+        <span class="ct" style="font-size:13px">📊 ملف Excel الشهري</span>
+        <span id="excel-badge" style="display:none" class="badge b-green">✓ تم الرفع</span>
+      </div>
+
+      <!-- Drop Zone -->
+      <div id="excel-drop-zone"
+        style="border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative"
+        onclick="document.getElementById('excel-file-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='#1a1a1a';this.style.background='#f0f0f0'"
+        ondragleave="this.style.borderColor='';this.style.background='#fafafa'"
+        ondrop="handleExcelDrop(event)">
+        <div id="dz-icon" style="font-size:36px;margin-bottom:8px">📂</div>
+        <div id="dz-text" style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">اسحب ملف Excel هنا أو اضغط للاختيار</div>
+        <div style="font-size:11px;color:var(--text3)">.xlsx / .xls — حجم أقصى 15MB</div>
+        <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">
+      </div>
+
+      <!-- File Info (after upload) -->
+      <div id="excel-info" style="display:none;margin-top:12px">
+        <!-- Period alert -->
+        <div id="period-alert" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:none">
+          <div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:2px">📅 الفترة الزمنية المكتشفة</div>
+          <div id="period-text" style="font-size:13px;color:#1d4ed8;font-weight:800"></div>
+        </div>
+
+        <!-- File row -->
+        <div style="display:flex;align-items:center;gap:10px;background:#f9f9f9;border-radius:10px;padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:24px">📗</div>
+          <div style="flex:1">
+            <div id="excel-filename" style="font-size:13px;font-weight:700;color:var(--dark)"></div>
+            <div id="excel-filesize" style="font-size:11px;color:var(--text3);margin-top:2px"></div>
+          </div>
+          <button onclick="removeExcel()" style="background:#fff1f0;border:1px solid #fecaca;border-radius:7px;padding:5px 12px;font-size:11px;color:var(--red);cursor:pointer;font-family:Tajawal,sans-serif;font-weight:600">إزالة</button>
+        </div>
+
+        <!-- Sheets -->
+        <div id="excel-sheets" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+
+        <!-- Column L differences (Odometer diff) -->
+        <div id="col-l-section" style="display:none">
+          <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span>📏 فروقات عمود L (الفارق بالكيلومتر)</span>
+            <span id="col-l-count" class="badge b-blue" style="font-size:10px"></span>
+          </div>
+          <div id="col-l-table" style="border-radius:10px;border:1px solid var(--border);overflow:hidden"></div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">📁 ملفات مرفوعة سابقاً</div>
+        <div id="excel-history">
+          <div class="s-file-row" onclick="toast('📗 فتح تقرير مارس 2026')"><div>📗 <span style="font-weight:600">وقود_مارس2026.xlsx</span><span style="font-size:10px;color:var(--text3);margin-right:6px">20 مارس 2026</span></div><div style="display:flex;gap:6px"><span class="badge b-green">مارس</span><span style="font-size:10px;color:var(--text3)">245 KB</span></div></div>
+          <div class="s-file-row" onclick="toast('📗 فتح تقرير فبراير 2026')"><div>📗 <span style="font-weight:600">وقود_فبراير2026.xlsx</span><span style="font-size:10px;color:var(--text3);margin-right:6px">20 فبراير 2026</span></div><div style="display:flex;gap:6px"><span class="badge b-gray">فبراير</span><span style="font-size:10px;color:var(--text3)">231 KB</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ODOMETER IMAGES — SEPARATE CARD ── -->
+    <div class="card">
+      <div class="ch">
+        <div>
+          <span class="ct" style="font-size:13px">📸 صور عدادات المركبات</span>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">صورة أول الشهر + آخر الشهر لكل مركبة</div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+            <span id="odo-done-count" class="badge b-green">0 مكتمل</span>
+            <span id="odo-partial-count" class="badge b-orange">0 ناقص</span>
+            <span id="odo-none-count" class="badge b-gray">0 لم يرفع</span>
+          </div>
+          <input id="plate-search-up" oninput="filterUploadVehicles(this.value)" placeholder="🔍 ابحث..." style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:12px;font-family:Tajawal,sans-serif;outline:none;width:160px">
+          <select id="fuel-filter-up" onchange="filterUploadVehicles(document.getElementById('plate-search-up').value)" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;font-family:Tajawal,sans-serif;outline:none;cursor:pointer">
+            <option value="all">الكل</option><option value="petrol">⛽ بنزين</option><option value="diesel">🚛 ديزل</option>
+          </select>
+        </div>
+      </div>
+      <div id="vehicles-upload-grid" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+  <!-- ══════════════ SETTINGS PAGE ══════════════ -->
+  <div class="page" id="page-settings" style="display:none;position:fixed;inset:0;right:var(--sidebar-w);background:var(--bg);overflow-y:auto;padding:20px 24px;z-index:10">
+    <div class="page-header" style="margin-bottom:20px">
+      <div><div class="page-title">⚙️ الإعدادات</div><div class="page-sub">إدارة النظام والتفضيلات</div></div>
+    </div>
+
+    <!-- تبويبات الإعدادات -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0">
+      <button class="s-tab active" data-tab="general" onclick="setSettingsTab(this)">عام</button>
+      <button class="s-tab" data-tab="report" onclick="setSettingsTab(this)">التقارير</button>
+      <button class="s-tab" data-tab="vehicles" onclick="setSettingsTab(this)">المركبات</button>
+      <button class="s-tab" data-tab="alerts" onclick="setSettingsTab(this)">التنبيهات</button>
+      <button class="s-tab" data-tab="users" onclick="setSettingsTab(this)">المستخدمون</button>
+      <button class="s-tab" data-tab="account" onclick="setSettingsTab(this)">الحساب</button>
+    </div>
+
+    <!-- عام -->
+    <div class="s-section active" id="s-general">
+      <div class="g g2" style="gap:14px">
+        <div class="card">
+          <div class="ch"><span class="ct" style="font-size:13px">🏢 معلومات المنشأة</span></div>
+          <div class="field"><label>اسم المنشأة</label><input class="modal-input" value="شركة النقل السعودية" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>البريد الإلكتروني</label><input class="modal-input" value="fleet@company.com.sa" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>المدينة</label><input class="modal-input" value="الرياض، المملكة العربية السعودية" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <button onclick="toast('✅ تم الحفظ')" style="margin-top:12px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ التغييرات</button>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct" style="font-size:13px">🌐 اللغة والعملة</span></div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+            <div class="s-row"><span class="s-lbl">اللغة</span><select class="s-sel"><option>العربية</option><option>English</option></select></div>
+            <div class="s-row"><span class="s-lbl">العملة</span><select class="s-sel"><option>ريال سعودي (SAR)</option><option>دولار (USD)</option></select></div>
+            <div class="s-row"><span class="s-lbl">تنسيق التاريخ</span><select class="s-sel"><option>يوم/شهر/سنة</option><option>شهر/يوم/سنة</option></select></div>
+            <div class="s-row"><span class="s-lbl">المنطقة الزمنية</span><select class="s-sel"><option>توقيت الرياض (GMT+3)</option><option>UTC</option></select></div>
+          </div>
+          <button onclick="toast('✅ تم الحفظ')" style="margin-top:14px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="ch"><span class="ct" style="font-size:13px">🎨 المظهر</span><span id="current-theme-lbl" style="font-size:11px;color:var(--text3);background:var(--bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px">☀️ فاتح</span></div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <div id="theme-light" onclick="setTheme('light')" style="flex:1;border:2px solid var(--dark);border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:var(--white);transition:all .2s">
+            <div style="font-size:22px;margin-bottom:5px">☀️</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text)">فاتح</div>
+          </div>
+          <div id="theme-dark" onclick="setTheme('dark')" style="flex:1;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:#111318;transition:all .2s">
+            <div style="font-size:22px;margin-bottom:5px">🌙</div>
+            <div style="font-size:12px;font-weight:700;color:#e8eaf0">داكن</div>
+          </div>
+          <div id="theme-auto" onclick="setTheme('auto')" style="flex:1;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .2s">
+            <div style="font-size:22px;margin-bottom:5px">💻</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text2)">تلقائي</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- التقارير -->
+    <div class="s-section" id="s-report" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="ct" style="font-size:13px">📊 إعدادات التقارير</span></div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+          <div class="s-row"><span class="s-lbl">الفترة الافتراضية</span><select class="s-sel"><option>شهري</option><option>أسبوعي</option><option>ربع سنوي</option><option>سنوي</option></select></div>
+          <div class="s-row"><span class="s-lbl">تنسيق التصدير</span><select class="s-sel"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
+          <div class="s-row"><span class="s-lbl">إرسال تقرير تلقائي</span><div class="s-toggle" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">تضمين الرسوم البيانية</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">إظهار المركبات الموقوفة</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+        </div>
+        <button onclick="toast('✅ تم حفظ إعدادات التقارير')" style="margin-top:16px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ</button>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="ch"><span class="ct" style="font-size:13px">📁 تقارير محفوظة</span></div>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div class="s-file-row" onclick="toast('⬇️ تحميل تقرير فبراير 2026')">
+            <div>📄 <span style="font-weight:600">تقرير وقود فبراير 2026</span></div>
+            <span class="badge b-gray">PDF</span>
+          </div>
+          <div class="s-file-row" onclick="toast('⬇️ تحميل تقرير مارس 2026')">
+            <div>📄 <span style="font-weight:600">تقرير وقود مارس 2026</span></div>
+            <span class="badge b-green">محدّث</span>
+          </div>
+          <div class="s-file-row" onclick="toast('⬇️ تحميل تقرير Q1 2026')">
+            <div>📊 <span style="font-weight:600">ملخص الربع الأول 2026</span></div>
+            <span class="badge b-blue">Excel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- المركبات -->
+    <div class="s-section" id="s-vehicles" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="ct" style="font-size:13px">🚗 حدود الاستهلاك</span></div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+          <div class="s-row"><span class="s-lbl">الحد الأعلى — بنزين 91 (لتر/شهر)</span><input type="number" value="800" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+          <div class="s-row"><span class="s-lbl">الحد الأدنى — بنزين 91 (لتر/شهر)</span><input type="number" value="100" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+          <div class="s-row"><span class="s-lbl">الحد الأعلى — ديزل (لتر/شهر)</span><input type="number" value="1500" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+          <div class="s-row"><span class="s-lbl">الحد الأدنى — ديزل (لتر/شهر)</span><input type="number" value="200" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+          <div class="s-row"><span class="s-lbl">سعر لتر البنزين 91 (ريال)</span><input type="number" value="2.18" step="0.01" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+          <div class="s-row"><span class="s-lbl">سعر لتر الديزل (ريال)</span><input type="number" value="1.82" step="0.01" style="width:90px;background:#f9f9f9;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;text-align:center;outline:none"></div>
+        </div>
+        <button onclick="toast('✅ تم حفظ حدود الاستهلاك')" style="margin-top:16px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ</button>
+      </div>
+    </div>
+
+    <!-- التنبيهات -->
+    <div class="s-section" id="s-alerts" style="display:none">
+      <div class="card">
+        <div class="ch"><span class="ct" style="font-size:13px">🔔 إعدادات التنبيهات</span></div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+          <div class="s-row"><span class="s-lbl">تنبيه عند تجاوز الحد الأعلى</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">تنبيه عند الحد الأدنى</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">تنبيه المركبات بدون تتبع</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">تنبيه المركبات الموقوفة</span><div class="s-toggle" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">إرسال تنبيه بالبريد</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          <div class="s-row"><span class="s-lbl">تنبيهات الواجهة</span><div class="s-toggle on" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+        </div>
+        <button onclick="toast('✅ تم حفظ إعدادات التنبيهات')" style="margin-top:16px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ</button>
+      </div>
+    </div>
+
+    <!-- المستخدمون -->
+    <div class="s-section" id="s-users" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <span class="ct" style="font-size:13px">👥 إدارة المستخدمين</span>
+          <button onclick="openAddUser()" style="background:var(--dark);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>إضافة مستخدم</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <input id="user-search" oninput="renderUsers()" placeholder="🔍 بحث بالاسم أو البريد..." style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;font-family:Tajawal,sans-serif;outline:none;flex:1;min-width:180px">
+          <select id="user-role-filter" onchange="renderUsers()" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:Tajawal,sans-serif;outline:none;cursor:pointer">
+            <option value="all">كل الأدوار</option>
+            <option value="admin">مدير</option>
+            <option value="editor">محرر</option>
+            <option value="viewer">قارئ</option>
+          </select>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>المستخدم</th><th>البريد الإلكتروني</th><th>الدور</th><th>الحالة</th><th>آخر دخول</th><th>إجراءات</th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table></div>
+        <div id="users-count" style="font-size:11px;color:var(--text3);margin-top:10px;text-align:left"></div>
+      </div>
+      <div class="g g3" style="gap:12px">
+        <div class="stat-item" style="text-align:center"><div style="font-size:22px;margin-bottom:4px">🔑</div><div class="stat-lbl">مدراء</div><div class="stat-num" id="cnt-admin">1</div></div>
+        <div class="stat-item" style="text-align:center"><div style="font-size:22px;margin-bottom:4px">✏️</div><div class="stat-lbl">محررون</div><div class="stat-num" id="cnt-editor">0</div></div>
+        <div class="stat-item" style="text-align:center"><div style="font-size:22px;margin-bottom:4px">👁️</div><div class="stat-lbl">قراء</div><div class="stat-num" id="cnt-viewer">0</div></div>
+      </div>
+    </div>
+
+    <!-- MODAL: إضافة/تعديل مستخدم -->
+    <div class="modal-ov" id="modal-user">
+      <div class="modal" style="min-width:380px">
+        <div class="modal-hd"><div class="modal-title" id="user-modal-title">➕ إضافة مستخدم</div><button class="modal-x" onclick="closeModal('modal-user')">✕</button></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div id="user-avatar-preview" style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800;flex-shrink:0">؟</div>
+          <div style="font-size:11px;color:var(--text3)">الصورة الرمزية تتولّد تلقائياً من الاسم</div>
+        </div>
+        <input type="hidden" id="user-edit-id">
+        <div class="field"><label>الاسم الكامل *</label><input id="u-name" oninput="updateUserPreview()" placeholder="مثال: أحمد محمد" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+        <div class="field" style="margin-top:10px"><label>البريد الإلكتروني *</label><input id="u-email" type="email" placeholder="example@company.com" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%;direction:ltr"></div>
+        <div class="field" style="margin-top:10px"><label>كلمة المرور</label><input id="u-pass" type="password" placeholder="اتركها فارغة لعدم التغيير" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+        <div class="field" style="margin-top:10px"><label>الدور</label>
+          <select id="u-role" style="width:100%;background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;cursor:pointer">
+            <option value="admin">🔑 مدير — صلاحية كاملة</option>
+            <option value="editor">✏️ محرر — قراءة وتعديل</option>
+            <option value="viewer">👁️ قارئ — قراءة فقط</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:10px"><label>الحالة</label>
+          <select id="u-status" style="width:100%;background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;cursor:pointer">
+            <option value="active">✅ نشط</option>
+            <option value="inactive">⏸️ موقوف</option>
+          </select>
+        </div>
+        <div class="mbtns"><button class="mbtn p" onclick="saveUser()">حفظ المستخدم</button><button class="mbtn s" onclick="closeModal('modal-user')">إلغاء</button></div>
+      </div>
+    </div>
+
+    <!-- الحساب -->
+    <div class="s-section" id="s-account" style="display:none">
+      <div class="g g2" style="gap:14px">
+        <div class="card">
+          <div class="ch"><span class="ct" style="font-size:13px">👤 معلومات الحساب</span></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">FM</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--dark)">مدير الأسطول</div>
+              <div style="font-size:11px;color:var(--text3)">fleet@company.com.sa</div>
+            </div>
+            <button onclick="toast('✏️ تغيير الصورة')" style="margin-right:auto;background:#f5f5f5;border:1px solid var(--border);border-radius:7px;padding:6px 12px;font-size:11.5px;cursor:pointer;font-family:Tajawal,sans-serif">تغيير</button>
+          </div>
+          <div class="field"><label>الاسم</label><input value="مدير الأسطول" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>البريد</label><input value="fleet@company.com.sa" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>الجوال</label><input value="+966 50 000 0000" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--dark);font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <button onclick="toast('✅ تم حفظ معلومات الحساب')" style="margin-top:12px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">حفظ</button>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct" style="font-size:13px">🔐 الأمان</span></div>
+          <div class="field"><label>كلمة المرور الحالية</label><input type="password" placeholder="••••••••" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>كلمة المرور الجديدة</label><input type="password" placeholder="••••••••" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <div class="field" style="margin-top:8px"><label>تأكيد كلمة المرور</label><input type="password" placeholder="••••••••" style="background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;font-family:Tajawal,sans-serif;outline:none;width:100%"></div>
+          <button onclick="toast('✅ تم تغيير كلمة المرور')" style="margin-top:12px;background:var(--dark);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">تغيير</button>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="s-row"><span class="s-lbl" style="font-size:12px">المصادقة الثنائية</span><div class="s-toggle" onclick="toggleSwitch(this)"><div class="s-knob"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;border:1px solid #fee2e2">
+        <div class="ch"><span class="ct" style="font-size:13px;color:var(--red)">⚠️ منطقة الخطر</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+          <button onclick="dangerClearData()" style="background:#fff1f0;color:var(--red);border:1px solid #fecaca;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">🗑️ مسح جميع البيانات</button>
+          <button onclick="dangerExportData()" style="background:#f5f5f5;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:Tajawal,sans-serif">📤 تصدير البيانات</button>
+          <button onclick="dangerResetSettings()" style="background:#fffbeb;color:#92400e;border:1px solid #fde68a;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:Tajawal,sans-serif">🔄 إعادة ضبط الإعدادات</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end settings page -->
+
+</div><!-- end main -->
+</div><!-- end flex -->
+
+<script>
+// ════════════════ DATA ════════════════
+const DATA = [
+  {num:1,plate:'7147-BAT',vtype:'نقل',brand:'Toyota Hilux',driver:'جمال السعيدي',fill_count:23,total_cost:3147.23,liters:1431.96,group:'high',fuel:'petrol',notes:''},
+  {num:2,plate:'8876-BTR',vtype:'نقل',brand:'Mitsubishi L200',driver:'مصطفى مقاولات',fill_count:20,total_cost:2295.52,liters:1052.99,group:'high',fuel:'petrol',notes:''},
+  {num:3,plate:'7254-BRS',vtype:'نقل',brand:'FOTON PECAB',driver:'علاء عبد الباقي',fill_count:16,total_cost:1932.31,liters:877.53,group:'high',fuel:'petrol',notes:''},
+  {num:4,plate:'3273-AM',vtype:'حافلة',brand:'Toyota Hiace',driver:'احمد خضر',fill_count:14,total_cost:1750.08,liters:794.77,group:'high',fuel:'petrol',notes:''},
+  {num:5,plate:'6093-BDQ',vtype:'نقل',brand:'Mitsubishi L200',driver:'مجدى سرحان',fill_count:17,total_cost:1710.75,liters:781.70,group:'high',fuel:'petrol',notes:''},
+  {num:6,plate:'7013-BRN',vtype:'نقل',brand:'FIAT Pickup',driver:'حسين البدوي',fill_count:9,total_cost:1210.85,liters:549.89,group:'high',fuel:'petrol',notes:''},
+  {num:7,plate:'7012-BRN',vtype:'نقل',brand:'FIAT strda',driver:'علي جابر',fill_count:8,total_cost:1154,liters:519.82,group:'high',fuel:'petrol',notes:''},
+  {num:8,plate:'1413-ANS',vtype:'نقل',brand:'Nissan Pickup',driver:'ابراهيم اسامه',fill_count:8,total_cost:1102.18,liters:500.54,group:'high',fuel:'petrol',notes:''},
+  {num:9,plate:'6137-BSR',vtype:'نقل',brand:'Isuzu D-MAX',driver:'مد شيبون',fill_count:9,total_cost:1041.51,liters:472.99,group:'high',fuel:'petrol',notes:''},
+  {num:10,plate:'3787-BDH',vtype:'نقل',brand:'Dodge Ram',driver:'كمال نور الدين',fill_count:8,total_cost:977.04,liters:444.01,group:'high',fuel:'petrol',notes:''},
+  {num:11,plate:'2624-RHA',vtype:'نقل',brand:'Suzuki Dzire',driver:'احمد إبراهيم',fill_count:1,total_cost:65,liters:29.82,group:'low',fuel:'petrol',notes:'واقفة - موظف في إجازة'},
+  {num:12,plate:'2491-RNE',vtype:'خصوصي',brand:'Suzuki Desire',driver:'عبدالله عبدالرحمان',fill_count:2,total_cost:118,liters:53.59,group:'low',fuel:'petrol',notes:''},
+  {num:13,plate:'6928-DKB',vtype:'خصوصي',brand:'Toyota Yaris',driver:'احمد عبدو',fill_count:4,total_cost:253,liters:115.20,group:'low',fuel:'petrol',notes:''},
+  {num:14,plate:'9175-DNH',vtype:'خصوصي',brand:'MG RX5',driver:'م/ حسني',fill_count:3,total_cost:336.13,liters:142.91,group:'low',fuel:'petrol',notes:'غير موجودة في التتبع'},
+  {num:15,plate:'2494-RNE',vtype:'خصوصي',brand:'Suzuki Desire',driver:'مهندس رمضان',fill_count:5,total_cost:350,liters:160.55,group:'low',fuel:'petrol',notes:''},
+  {num:16,plate:'4732-BBM',vtype:'نقل خاص',brand:'Renault Express',driver:'ارمان',fill_count:5,total_cost:381.86,liters:173.42,group:'low',fuel:'petrol',notes:'غير موجودة في التتبع'},
+  {num:17,plate:'2611-DAN',vtype:'خصوصي',brand:'Ford Figo',driver:'اسلام كمال',fill_count:4,total_cost:405.75,liters:184.26,group:'low',fuel:'petrol',notes:'غير موجودة في التتبع'},
+  {num:18,plate:'1546-DQM',vtype:'خصوصي',brand:'Toyota Yaris',driver:'عمرو عطيه',fill_count:6,total_cost:410,liters:186.19,group:'low',fuel:'petrol',notes:'غير موجودة في التتبع'},
+  {num:19,plate:'9231-BSK',vtype:'نقل',brand:'Toyota Hilux',driver:'احمد نبيل',fill_count:4,total_cost:441.06,liters:200.30,group:'low',fuel:'petrol',notes:''},
+  {num:20,plate:'6399-AT',vtype:'خصوصي',brand:'Mazda CX-9',driver:'مهندس مكي',fill_count:3,total_cost:451,liters:204.81,group:'low',fuel:'petrol',notes:''},
+  {num:21,plate:'3288-ARQ',vtype:'شاحنة',brand:'Volvo FH Truck',driver:'عبدالغني عزمان',fill_count:14,total_cost:5100,liters:2756.75,group:'high',fuel:'diesel',notes:''},
+  {num:22,plate:'1836-BTO',vtype:'شاحنة',brand:'Mercedes Actros',driver:'أكرام دخسان',fill_count:8,total_cost:4000,liters:2182.41,group:'high',fuel:'diesel',notes:''},
+  {num:23,plate:'3126-ASD',vtype:'شاحنة',brand:'Mitsubishi FE Dyna',driver:'فيلا ريل',fill_count:26,total_cost:3218.01,liters:1739.47,group:'high',fuel:'diesel',notes:''},
+  {num:24,plate:'8981-ABL',vtype:'شاحنة',brand:'Isuzu Canter',driver:'احمد إسماعيل',fill_count:27,total_cost:2862.35,liters:1579.83,group:'high',fuel:'diesel',notes:''},
+  {num:25,plate:'1474-ASR',vtype:'خصوصي',brand:'Volvo FH Truck 1',driver:'ربيع احمد',fill_count:7,total_cost:2858.08,liters:1577.30,group:'high',fuel:'diesel',notes:''},
+  {num:26,plate:'3124-ASD',vtype:'شاحنة',brand:'Mitsubishi FE Dyna',driver:'شميم اختر',fill_count:18,total_cost:2483.69,liters:1372.21,group:'high',fuel:'diesel',notes:''},
+  {num:27,plate:'1008-BAH',vtype:'نقل',brand:'GAC Legacy',driver:'محمد السفياني',fill_count:18,total_cost:2262.27,liters:1248.49,group:'high',fuel:'diesel',notes:''},
+  {num:28,plate:'8645-AWM',vtype:'خصوصي',brand:'Mitsubishi Canter',driver:'عنايت مير سلام',fill_count:18,total_cost:2237.22,liters:1234.67,group:'high',fuel:'diesel',notes:''},
+  {num:29,plate:'3374-ARM',vtype:'نقل',brand:'Mercedes Actros',driver:'محمد شاكيل',fill_count:10,total_cost:2222,liters:1226.55,group:'high',fuel:'diesel',notes:''},
+  {num:30,plate:'4235-BRM',vtype:'نقل خاص',brand:'Isuzu Canter',driver:'عثمان الحاج',fill_count:22,total_cost:2215.31,liters:1222.77,group:'high',fuel:'diesel',notes:'غير موجودة في التتبع'},
+  {num:31,plate:'5487-ADN',vtype:'شاحنة',brand:'Hino Canter',driver:'عبدالسلام غلام',fill_count:11,total_cost:2255.61,liters:1219.25,group:'high',fuel:'diesel',notes:''},
+  {num:32,plate:'1969-ASQ',vtype:'شاحنة',brand:'Audi Quon CX',driver:'باسم يوسف',fill_count:8,total_cost:2119.02,liters:1169.44,group:'high',fuel:'diesel',notes:''},
+  {num:33,plate:'5309-BAB',vtype:'نقل',brand:'Isuzu D-MAX',driver:'محمد عزام',fill_count:14,total_cost:1903.38,liters:1050.43,group:'high',fuel:'diesel',notes:'متوقفة 20/3–2/4'},
+  {num:34,plate:'5931-BAH',vtype:'نقل',brand:'FOTON TANLAND',driver:'زبير مصطفى',fill_count:16,total_cost:1877.09,liters:1035.92,group:'high',fuel:'diesel',notes:''},
+  {num:35,plate:'2189-BDH',vtype:'خصوصي',brand:'Mitsubishi Canter',driver:'مشئ الرحمن',fill_count:18,total_cost:1811.39,liters:999.66,group:'high',fuel:'diesel',notes:''},
+  {num:36,plate:'1508-BAY',vtype:'خصوصي',brand:'FOTON TUNLAND',driver:'رمضان ماهر',fill_count:1,total_cost:84,liters:46.93,group:'low',fuel:'diesel',notes:'تعبئة واحدة في الشهر'},
+  {num:37,plate:'8982-ABL',vtype:'شاحنة',brand:'Isuzu Canter',driver:'محمد رشاد',fill_count:1,total_cost:285,liters:157.29,group:'low',fuel:'diesel',notes:'متوقفة لتغيير اللون والكرت'},
+  {num:38,plate:'9823-BAB',vtype:'نقل',brand:'Isuzu D-MAX',driver:'إسماعيل المشرف',fill_count:3,total_cost:378.04,liters:208.63,group:'low',fuel:'diesel',notes:''},
+  {num:39,plate:'7907-BAQ',vtype:'نقل',brand:'Isuzu D-MAX',driver:'محمد الجوهري',fill_count:3,total_cost:380,liters:207.45,group:'low',fuel:'diesel',notes:''},
+  {num:40,plate:'7908-BAQ',vtype:'نقل',brand:'Isuzu D-MAX',driver:'رضوان الشامي',fill_count:3,total_cost:385.69,liters:213.79,group:'low',fuel:'diesel',notes:''},
+  {num:41,plate:'3878-BAL',vtype:'خصوصي',brand:'FOTON Tunland',driver:'عبد الرحمن إدريس',fill_count:3,total_cost:397.41,liters:219.32,group:'low',fuel:'diesel',notes:'غير موجودة في التتبع'},
+  {num:42,plate:'5830-BAQ',vtype:'نقل',brand:'Great Wall Wingle7',driver:'محمد عزت',fill_count:5,total_cost:427,liters:238.55,group:'low',fuel:'diesel',notes:''},
+  {num:43,plate:'2468-BAA',vtype:'نقل',brand:'Isuzu D-MAX',driver:'احمد عبدالسلام',fill_count:4,total_cost:452,liters:244.99,group:'low',fuel:'diesel',notes:'غير موجودة في التتبع'},
+  {num:44,plate:'2018-BAT',vtype:'نقل',brand:'FOTON PECAB',driver:'سامي المشرف',fill_count:5,total_cost:473,liters:264.25,group:'low',fuel:'diesel',notes:''},
+  {num:45,plate:'5661-BAH',vtype:'نقل',brand:'GAC Legacy',driver:'محمد عاطف',fill_count:4,total_cost:485.66,liters:271.32,group:'low',fuel:'diesel',notes:''},
+  {num:46,plate:'9526-BAD',vtype:'نقل',brand:'Toyota D4D',driver:'سلطان الثبيتي',fill_count:2,total_cost:494,liters:272.63,group:'low',fuel:'diesel',notes:'غير موجودة في التتبع'},
+  {num:47,plate:'7322-BAK',vtype:'نقل',brand:'Great Wall Wingle7',driver:'اسلام النجار',fill_count:6,total_cost:499.79,liters:279.21,group:'low',fuel:'diesel',notes:''},
+  {num:48,plate:'3804-BTO',vtype:'نقل',brand:'Great Wall Wingle7',driver:'محمد الشلوي',fill_count:5,total_cost:507.94,liters:280.32,group:'low',fuel:'diesel',notes:''},
+  {num:49,plate:'8502-BQS',vtype:'نقل',brand:'FOTON Tunland',driver:'حذيفه الزين',fill_count:4,total_cost:522.32,liters:288.33,group:'low',fuel:'diesel',notes:''},
+  {num:50,plate:'6975-BAN',vtype:'نقل',brand:'FOTON Tunland',driver:'الصادق قمرالدين',fill_count:4,total_cost:547.29,liters:302.30,group:'low',fuel:'diesel',notes:''},
+];
+
+const f=n=>(+n||0).toLocaleString('ar',{minimumFractionDigits:0,maximumFractionDigits:1});
+
+// ════════════════ TOAST ════════════════
+let _tt;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ════════════════ FILTER ════════════════
+function setFlt(btn){btn.closest('.ca,.filter-row').querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');toast('🔃 تم التصفية');}
+
+// ════════════════ CHARTS ════════════════
+const CD_BASE={plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#aaa',font:{family:'Tajawal',size:10}},grid:{color:'#f5f5f5'}},y:{ticks:{color:'#aaa',font:{family:'Tajawal',size:10}},grid:{color:'#f5f5f5'}}},animation:{duration:800},responsive:true,maintainAspectRatio:false};
+
+// ════════════════ NAV ════════════════
+function goPage(btn){
+  showContent();
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+btn.dataset.page)?.classList.add('active');
+  if(btn.dataset.page==='uploads')filterUploadVehicles('');
+}
+function goPageById(id){
+  showContent();
+  document.querySelectorAll('.ni').forEach(n=>{if(n.dataset.page===id)n.classList.add('active');else n.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+}
+
+// ════════════════ SEARCH ════════════════
+const PAGES_INDEX=[
+  {type:'page',icon:'📊',title:'Dashboard',sub:'الصفحة الرئيسية',page:'overview'},
+  {type:'page',icon:'📈',title:'الاستهلاك',sub:'تفاصيل جميع المركبات',page:'consumption'},
+  {type:'page',icon:'🔁',title:'المقارنات',sub:'بنزين vs ديزل',page:'comparisons'},
+  {type:'page',icon:'🚛',title:'تأثير الأسطول',sub:'أداء وانحراف',page:'fleet'},
+  {type:'page',icon:'⭐',title:'جودة المؤشرات',sub:'KPIs',page:'quality'},
+  {type:'page',icon:'🔔',title:'التنبيهات',sub:'مركبات تحتاج متابعة',page:'insights'},
+  {type:'page',icon:'🚛',title:'الشاحنات الثقيلة',sub:'فريق الديزل',page:'trucks'},
+  {type:'page',icon:'🚗',title:'مركبات النقل',sub:'فريق الأدنى',page:'transport'},
+];
+// Store last search results for event delegation
+let _lastSearchRes=[];
+
+function doSearch(q){
+  const drop=document.getElementById('s-drop');
+  if(!q){drop.classList.remove('open');_lastSearchRes=[];return}
+  const vehicles=DATA.map(v=>({type:'vehicle',icon:v.fuel==='diesel'?'🚛':'⛽',title:v.plate,sub:v.driver+' — '+f(v.total_cost)+' ريال',plate:v.plate,row:v}));
+  const all=[...PAGES_INDEX,...vehicles];
+  _lastSearchRes=all.filter(x=>x.title.includes(q)||x.sub.includes(q)||(x.plate&&x.plate.includes(q))).slice(0,7);
+  if(!_lastSearchRes.length){
+    drop.innerHTML='<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">لا توجد نتائج</div>';
+    drop.classList.add('open');return;
+  }
+  drop.innerHTML=_lastSearchRes.map((r,i)=>
+    '<div class="sr-item" data-si="'+i+'">'+'<div class="sr-icon">'+r.icon+'</div>'+'<div><div class="sr-title">'+r.title+'</div><div class="sr-sub">'+r.sub+'</div></div>'+'</div>'
+  ).join('');
+  drop.classList.add('open');
+}
+
+document.getElementById('s-drop').addEventListener('click',function(e){
+  const item=e.target.closest('[data-si]');
+  if(!item)return;
+  const r=_lastSearchRes[+item.dataset.si];
+  if(!r)return;
+  this.classList.remove('open');
+  document.getElementById('s-input').value='';
+  _lastSearchRes=[];
+  if(r.type==='page'){goPageById(r.page);toast('📄 '+r.title);}
+  else{showVehicleModal(r.row);}
+});
+
+function openDrop(){if(document.getElementById('s-input').value)document.getElementById('s-drop').classList.add('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-bar'))document.getElementById('s-drop').classList.remove('open');});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('s-input').focus();}if(e.key==='Escape')document.getElementById('s-drop').classList.remove('open');});
+
+// ════════════════ TABLE ════════════════
+// Global map: plate -> row (safe lookup, no inline Arabic in onclick)
+const VMAP={};DATA.forEach(r=>{VMAP[r.plate]=r;});
+
+function showVehicleModal(r){
+  document.getElementById('mv-title').textContent=(r.fuel==='diesel'?'🚛':'⛽')+' '+r.plate;
+  document.getElementById('mv-body').innerHTML=
+    '<div style="background:#f9f9f9;border-radius:10px;padding:12px;font-size:12.5px;line-height:2;font-family:Tajawal,sans-serif;color:var(--text2)">'+
+    '<b>السائق:</b> '+r.driver+'<br>'+
+    '<b>نوع المركبة:</b> '+r.vtype+'<br>'+
+    '<b>الماركة:</b> '+r.brand+'<br>'+
+    '<b>عدد التعبئة:</b> '+r.fill_count+'<br>'+
+    '<b>التكلفة:</b> '+f(r.total_cost)+' ريال<br>'+
+    '<b>الاستهلاك:</b> '+f(r.liters)+' لتر<br>'+
+    '<b>المجموعة:</b> '+(r.group==='high'?'الحد الأعلى':'الحد الأدنى')+'<br>'+
+    '<b>الوقود:</b> '+(r.fuel==='petrol'?'بنزين 91':'ديزل')+
+    (r.notes?'<br><b>ملاحظات:</b> '+r.notes:'')+
+    '</div>';
+  openModal('modal-vehicle');
+}
+
+// Event delegation on all tbodies
+document.addEventListener('click',function(e){
+  const tr=e.target.closest('tr[data-plate]');
+  if(!tr)return;
+  const r=VMAP[tr.dataset.plate];
+  if(r)showVehicleModal(r);
+});
+
+let tblFilter='all',sortCol=null,sortAsc=true;
+function renderTable(data,tbodyId,cols){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return;
+  tbody.innerHTML=data.map((r,i)=>'<tr data-plate="'+r.plate+'" style="cursor:pointer">'+cols(r,i+1)+'</tr>').join('');
+}
+function mainCols(r,i){return`
+  <td>${i}</td>
+  <td><span class="plate">${r.plate}</span></td>
+  <td style="font-size:11px">${r.vtype}</td>
+  <td style="font-size:11px">${r.brand}</td>
+  <td style="font-size:11px;max-width:120px">${r.driver}</td>
+  <td style="text-align:center">${r.fill_count}</td>
+  <td><strong class="cost-v">${f(r.total_cost)}</strong></td>
+  <td>${f(r.liters)}</td>
+  <td><span class="badge ${r.group==='high'?'b-red':'b-green'}">${r.group==='high'?'أعلى':'أدنى'}</span></td>
+  <td><span class="badge ${r.fuel==='petrol'?'b-orange':'b-blue'}">${r.fuel==='petrol'?'بنزين':'ديزل'}</span></td>
+  <td style="font-size:10.5px;color:var(--text3);max-width:130px">${r.notes||'—'}</td>`;}
+
+function filterTbl(f,btn){
+  tblFilter=f;
+  document.querySelectorAll('.filter-row .flt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let d=DATA;
+  if(f==='petrol')d=DATA.filter(r=>r.fuel==='petrol');
+  else if(f==='diesel')d=DATA.filter(r=>r.fuel==='diesel');
+  else if(f==='high')d=DATA.filter(r=>r.group==='high');
+  else if(f==='low')d=DATA.filter(r=>r.group==='low');
+  else if(f==='petrol_high')d=DATA.filter(r=>r.fuel==='petrol'&&r.group==='high');
+  else if(f==='petrol_low')d=DATA.filter(r=>r.fuel==='petrol'&&r.group==='low');
+  else if(f==='diesel_high')d=DATA.filter(r=>r.fuel==='diesel'&&r.group==='high');
+  else if(f==='diesel_low')d=DATA.filter(r=>r.fuel==='diesel'&&r.group==='low');
+  renderTable(d,'main-tbody',mainCols);
+}
+function sortTbl(col){
+  if(sortCol===col)sortAsc=!sortAsc;else{sortCol=col;sortAsc=true;}
+  let d=[...DATA];
+  if(tblFilter==='petrol')d=d.filter(r=>r.fuel==='petrol');
+  else if(tblFilter==='diesel')d=d.filter(r=>r.fuel==='diesel');
+  else if(tblFilter==='high')d=d.filter(r=>r.group==='high');
+  else if(tblFilter==='low')d=d.filter(r=>r.group==='low');
+  d.sort((a,b)=>sortAsc?(a[col]>b[col]?1:-1):(a[col]<b[col]?1:-1));
+  renderTable(d,'main-tbody',mainCols);
+}
+renderTable(DATA,'main-tbody',mainCols);
+
+// Trucks table
+const trucks=DATA.filter(r=>r.fuel==='diesel'&&r.group==='high');
+renderTable(trucks,'trucks-tbody',(r,i)=>`<td>${i}</td><td><span class="plate">${r.plate}</span></td><td style="font-size:11px">${r.brand}</td><td style="font-size:11px">${r.driver}</td><td style="text-align:center">${r.fill_count}</td><td><strong class="cost-v">${f(r.total_cost)}</strong></td><td>${f(r.liters)}</td><td style="font-size:10.5px;color:var(--text3)">${r.notes||'—'}</td>`);
+
+// Transport table
+const transport=DATA.filter(r=>r.group==='low');
+renderTable(transport,'transport-tbody',(r,i)=>`<td>${i}</td><td><span class="plate">${r.plate}</span></td><td style="font-size:11px">${r.brand}</td><td style="font-size:11px">${r.driver}</td><td style="text-align:center">${r.fill_count}</td><td><strong class="cost-v">${f(r.total_cost)}</strong></td><td>${f(r.liters)}</td><td><span class="badge ${r.fuel==='petrol'?'b-orange':'b-blue'}">${r.fuel==='petrol'?'بنزين':'ديزل'}</span></td><td style="font-size:10.5px;color:var(--text3)">${r.notes||'—'}</td>`);
+
+// Drivers - use data-plate for safe delegation
+const topDrivers=[...DATA].sort((a,b)=>b.total_cost-a.total_cost).slice(0,5);
+document.getElementById('drivers-list').innerHTML=topDrivers.map((r,i)=>
+  '<div data-plate="'+r.plate+'" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer">'+
+  '<div style="width:24px;height:24px;border-radius:7px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2)">'+(i+1)+'</div>'+
+  '<div style="flex:1"><div style="font-size:12.5px;font-weight:600;color:var(--dark)">'+r.driver+'</div><div style="font-size:11px;color:var(--text3)">'+r.plate+' — '+r.brand+'</div></div>'+
+  '<div><strong style="font-size:13px;color:var(--dark)">'+f(r.total_cost)+'</strong><span style="font-size:10px;color:var(--text3)"> ريال</span></div>'+
+  '<span class="badge '+(r.fuel==='petrol'?'b-orange':'b-blue')+'">'+(r.fuel==='petrol'?'⛽':'🚛')+'</span>'+
+  '</div>'
+).join('');
+
+// Alerts - use data-ai index for safe delegation
+const alerts=[
+  {icon:'⚠️',color:'#fff8e1',title:'Volvo FH (3288-ARQ) — استهلاك شاذ',sub:'5,100 ريال — 2,757 لتر — أعلى من المتوسط بـ 300%',badge:'عاجل',bc:'b-red'},
+  {icon:'📍',color:'#fff8e1',title:'8 مركبات بدون نظام التتبع GPS',sub:'4732، 2611، 1546، 9175، 2468، 9526، 3878، 4235',badge:'تنبيه',bc:'b-orange'},
+  {icon:'🛑',color:'#fff1f0',title:'Isuzu Canter (8982-ABL) — موقوفة',sub:'تغيير اللون وكرت التشغيل — تعبئة واحدة فقط 285 ريال',badge:'موقوفة',bc:'b-red'},
+  {icon:'🛑',color:'#fff1f0',title:'Isuzu D-MAX (5309-BAB) — موقوفة',sub:'متوقفة من 20/3 إلى 2/4 — 1,903 ريال',badge:'موقوفة',bc:'b-red'},
+  {icon:'😴',color:'#f0f9ff',title:'Suzuki Dzire (2624-RHA) — موظف في إجازة',sub:'تعبئة واحدة فقط — 65 ريال — 29 لتر',badge:'إجازة',bc:'b-blue'},
+  {icon:'😴',color:'#f0f9ff',title:'FOTON TUNLAND (1508-BAY) — تعبئة واحدة',sub:'84 ريال — 47 لتر — أقل استهلاك في الأسطول',badge:'منخفض',bc:'b-blue'},
+  {icon:'🚛',color:'#f0fdf4',title:'Mercedes Actros (1836-BTO) — استهلاك عالٍ',sub:'4,000 ريال — 2,182 لتر — ثاني أعلى في الأسطول',badge:'مراجعة',bc:'b-orange'},
+];
+document.getElementById('alerts-list').innerHTML=alerts.map((a,i)=>
+  '<div class="alert-item" data-ai="'+i+'" style="cursor:pointer">'+
+  '<div class="alert-ic" style="background:'+a.color+'">'+a.icon+'</div>'+
+  '<div style="flex:1"><div class="alert-title">'+a.title+'</div><div class="alert-sub">'+a.sub+'</div></div>'+
+  '<span class="badge '+a.bc+' alert-badge">'+a.badge+'</span>'+
+  '</div>'
+).join('');
+document.getElementById('alerts-list').addEventListener('click',function(e){
+  const item=e.target.closest('[data-ai]');
+  if(item){const a=alerts[+item.dataset.ai];if(a)toast(a.icon+' '+a.badge+': '+a.title.split(' — ')[0]);}
+});
+
+// Task cards delegation
+document.addEventListener('click',function(e){
+  const tc=e.target.closest('[data-task]');
+  if(!tc)return;
+  const t=tc.dataset.task;
+  const tasks={
+    volvo:'3288-ARQ',
+    canter:'8982-ABL',
+    hilux:'7147-BAT'
+  };
+  const r=VMAP[tasks[t]];
+  if(r)showVehicleModal(r);
+});
+
+// ════════════════ USERS ════════════════
+const ROLE_LABELS={admin:'🔑 مدير',editor:'✏️ محرر',viewer:'👁️ قارئ'};
+const ROLE_COLORS={admin:'b-red',editor:'b-orange',viewer:'b-blue'};
+const AVATARS=['#667eea','#f59e0b','#22c55e','#ef4444','#8b5cf6','#06b6d4','#ec4899','#14b8a6'];
+
+let USERS=[
+  {id:1,name:'مدير الأسطول',email:'fleet@company.com.sa',role:'admin',status:'active',lastLogin:'اليوم'},
+];
+
+function saveUsersLocal(){}
+
+function initials(name){return name?name.trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'؟';}
+function avatarColor(id){return AVATARS[id%AVATARS.length];}
+
+function renderUsers(){
+  const q=(document.getElementById('user-search')||{}).value||'';
+  const rf=(document.getElementById('user-role-filter')||{}).value||'all';
+  let list=USERS;
+  if(q)list=list.filter(u=>u.name.includes(q)||u.email.includes(q));
+  if(rf!=='all')list=list.filter(u=>u.role===rf);
+
+  const tbody=document.getElementById('users-tbody');
+  if(!tbody)return;
+
+  tbody.innerHTML=list.map(u=>`
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:32px;height:32px;border-radius:9px;background:${avatarColor(u.id)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;flex-shrink:0">${initials(u.name)}</div>
+          <div><div style="font-size:12.5px;font-weight:600;color:var(--dark)">${u.name}</div></div>
+        </div>
+      </td>
+      <td style="font-size:11.5px;color:var(--text2);direction:ltr">${u.email}</td>
+      <td><span class="badge ${ROLE_COLORS[u.role]}">${ROLE_LABELS[u.role]}</span></td>
+      <td><span class="badge ${u.status==='active'?'b-green':'b-gray'}">${u.status==='active'?'نشط':'موقوف'}</span></td>
+      <td style="font-size:11px;color:var(--text3)">${u.lastLogin||'—'}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button onclick="editUser(${u.id})" style="background:#f5f5f5;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:Tajawal,sans-serif;color:var(--text)">تعديل</button>
+          <button onclick="toggleUserStatus(${u.id})" style="background:#f5f5f5;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:Tajawal,sans-serif;color:var(--text)">${u.status==='active'?'إيقاف':'تفعيل'}</button>
+          ${u.id!==1?`<button onclick="deleteUser(${u.id})" style="background:#fff1f0;border:1px solid #fecaca;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:Tajawal,sans-serif;color:var(--red)">حذف</button>`:''}
+        </div>
+      </td>
+    </tr>`).join('');
+
+  const cnt=document.getElementById('users-count');
+  if(cnt)cnt.textContent='عرض '+list.length+' من أصل '+USERS.length+' مستخدم';
+
+  // Update counts
+  const ca=document.getElementById('cnt-admin');
+  const ce=document.getElementById('cnt-editor');
+  const cv=document.getElementById('cnt-viewer');
+  if(ca)ca.textContent=USERS.filter(u=>u.role==='admin').length;
+  if(ce)ce.textContent=USERS.filter(u=>u.role==='editor').length;
+  if(cv)cv.textContent=USERS.filter(u=>u.role==='viewer').length;
+}
+
+function openAddUser(){
+  document.getElementById('user-modal-title').textContent='➕ إضافة مستخدم جديد';
+  document.getElementById('user-edit-id').value='';
+  document.getElementById('u-name').value='';
+  document.getElementById('u-email').value='';
+  document.getElementById('u-pass').value='';
+  document.getElementById('u-role').value='viewer';
+  document.getElementById('u-status').value='active';
+  document.getElementById('user-avatar-preview').textContent='؟';
+  document.getElementById('user-avatar-preview').style.background='linear-gradient(135deg,#667eea,#764ba2)';
+  openModal('modal-user');
+}
+
+function editUser(id){
+  const u=USERS.find(x=>x.id===id);if(!u)return;
+  document.getElementById('user-modal-title').textContent='✏️ تعديل: '+u.name;
+  document.getElementById('user-edit-id').value=u.id;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-email').value=u.email;
+  document.getElementById('u-pass').value='';
+  document.getElementById('u-role').value=u.role;
+  document.getElementById('u-status').value=u.status;
+  const av=document.getElementById('user-avatar-preview');
+  av.textContent=initials(u.name);
+  av.style.background=avatarColor(u.id);
+  openModal('modal-user');
+}
+
+function updateUserPreview(){
+  const name=document.getElementById('u-name').value;
+  const av=document.getElementById('user-avatar-preview');
+  av.textContent=initials(name)||'؟';
+}
+
+function saveUser(){
+  const name=document.getElementById('u-name').value.trim();
+  const email=document.getElementById('u-email').value.trim();
+  const role=document.getElementById('u-role').value;
+  const status=document.getElementById('u-status').value;
+  const editId=+document.getElementById('user-edit-id').value;
+
+  if(!name){toast('⚠️ الاسم مطلوب');return;}
+  if(!email||!email.includes('@')){toast('⚠️ البريد الإلكتروني غير صحيح');return;}
+
+  if(editId){
+    const u=USERS.find(x=>x.id===editId);
+    if(u){u.name=name;u.email=email;u.role=role;u.status=status;}
+    toast('✅ تم تعديل المستخدم: '+name);
+  } else {
+    const emailExists=USERS.some(u=>u.email===email);
+    if(emailExists){toast('⚠️ البريد مستخدم بالفعل');return;}
+    const newId=Math.max(0,...USERS.map(u=>u.id))+1;
+    USERS.push({id:newId,name,email,role,status,lastLogin:'الآن'});
+    toast('✅ تم إضافة المستخدم: '+name);
+  }
+  saveUsersLocal();
+  renderUsers();
+  closeModal('modal-user');
+}
+
+function deleteUser(id){
+  if(id===1){toast('⚠️ لا يمكن حذف المدير الرئيسي');return;}
+  const u=USERS.find(x=>x.id===id);
+  if(!u)return;
+  USERS=USERS.filter(x=>x.id!==id);
+  saveUsersLocal();
+  renderUsers();
+  toast('🗑️ تم حذف: '+u.name);
+}
+
+function toggleUserStatus(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u)return;
+  if(id===1&&u.status==='active'){toast('⚠️ لا يمكن إيقاف المدير الرئيسي');return;}
+  u.status=u.status==='active'?'inactive':'active';
+  saveUsersLocal();
+  renderUsers();
+  toast(u.status==='active'?'✅ تم تفعيل: '+u.name:'⏸️ تم إيقاف: '+u.name);
+}
+
+// Initialize
+renderUsers();
+
+// ════════════════ SETTINGS & NAVIGATION FIX ════════════════
+function showContent(){
+  const c=document.querySelector('.content');
+  const s=document.getElementById('page-settings');
+  if(c)c.style.display='block';
+  if(s)s.style.display='none';
+}
+function goSettings(btn){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelector('.content').style.display='none';
+  document.getElementById('page-settings').style.display='block';
+}
+function setSettingsTab(btn){
+  document.querySelectorAll('.s-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.s-section').forEach(s=>s.style.display='none');
+  document.getElementById('s-'+btn.dataset.tab).style.display='block';
+}
+function toggleSwitch(el){
+  el.classList.toggle('on');
+  toast(el.classList.contains('on')?'✅ تم التفعيل':'⭕ تم التعطيل');
+}
+
+// ════════════════ GOALS ════════════════
+function toggleGoal(el){
+  const cb=el.querySelector('.goal-cb'),t=el.querySelector('.goal-text');
+  cb.classList.toggle('done');t.classList.toggle('done');
+  toast(cb.classList.contains('done')?'✅ تم إتمام الهدف':'↩️ تم إلغاء الهدف');
+}
+function addGoal(){
+  const li=document.getElementById('goals-list');
+  const d=document.createElement('div');d.className='goal-item';d.onclick=function(){toggleGoal(this)};
+  d.innerHTML=`<div class="goal-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><span class="goal-text">هدف جديد</span>`;
+  li.appendChild(d);toast('➕ تمت إضافة هدف');
+}
+
+// ════════════════ MODALS ════════════════
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}));
+function openVehicle(title,plate,details){
+  document.getElementById('mv-title').textContent=title;
+  document.getElementById('mv-body').innerHTML='<div style="background:#f9f9f9;border-radius:10px;padding:12px;font-size:12.5px;line-height:1.8;font-family:Tajawal,sans-serif;color:var(--text2)">'+details+'</div>';
+  openModal('modal-vehicle');
+}
+// Drivers list delegation
+document.getElementById('drivers-list').addEventListener('click',function(e){
+  const item=e.target.closest('[data-plate]');
+  if(item){const r=VMAP[item.dataset.plate];if(r)showVehicleModal(r);}
+});
+function openInt(name,color,icon,desc){
+  document.getElementById('int-title').textContent=icon+' ربط '+name;
+  document.getElementById('int-body').innerHTML='<p style="font-size:12.5px;color:var(--text2);margin-bottom:12px">'+desc+'</p><div class="field"><label>رمز الوصول (Token)</label><input type="password" placeholder="أدخل الـ API token..."></div>';
+  openModal('modal-int');
+}
+
+// ═══ ألوان ديناميكية للرسوم ═══
+const C = {
+  diesel:    () => document.documentElement.getAttribute('data-theme')==='dark' ? '#6ee7f7' : '#1a1a1a',
+  dieselBg:  () => document.documentElement.getAttribute('data-theme')==='dark' ? 'rgba(110,231,247,0.10)' : 'rgba(26,26,26,0.05)',
+  gray:      () => document.documentElement.getAttribute('data-theme')==='dark' ? '#7a82a8' : '#6b7280',
+  grayLight: () => document.documentElement.getAttribute('data-theme')==='dark' ? '#3a4060' : '#d1d5db',
+  border:    () => document.documentElement.getAttribute('data-theme')==='dark' ? '#1c2030' : '#ffffff',
+};
+
+// Weekly
+let weeklyChart=new Chart(document.getElementById('weekly-chart'),{
+  type:'line',
+  data:{labels:['','','','','','',''],datasets:[
+    {data:[900,1100,850,1300,1050,1200,1432],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.08)',fill:true,tension:.45,borderWidth:2,pointRadius:0,pointHoverRadius:4},
+    {data:[2800,3100,2500,3400,2900,3100,2757],borderColor:'#1a1a1a',backgroundColor:'rgba(26,26,26,0.05)',fill:true,tension:.45,borderWidth:2,pointRadius:0,pointHoverRadius:4},
+  ]},options:{...CD_BASE}
+});
+function refreshWeekly(){
+  weeklyChart.data.datasets[0].data=Array.from({length:7},()=>Math.floor(600+Math.random()*1000));
+  weeklyChart.data.datasets[1].data=Array.from({length:7},()=>Math.floor(2000+Math.random()*1500));
+  weeklyChart.update();toast('🔄 تم تحديث البيانات');
+}
+
+// Month donut
+let monthDonut=new Chart(document.getElementById('month-donut'),{type:'doughnut',data:{labels:['ديزل','بنزين'],datasets:[{data:[70,30],backgroundColor:['#1a1a1a','#f59e0b'],borderWidth:0,hoverOffset:3}]},options:{cutout:'68%',plugins:{legend:{display:false}},animation:{duration:1000}}});
+
+// Project rings
+function mRing(id,pct,clr){new Chart(document.getElementById(id),{type:'doughnut',data:{labels:['',''],datasets:[{data:[pct,100-pct],backgroundColor:[clr,'rgba(255,255,255,0.12)'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{display:false}},animation:{duration:900}}});}
+mRing('r1',85,'#ef4444');mRing('r2',62,'#f59e0b');mRing('r3',28,'#22c55e');
+
+// Comparisons
+let cmpCost=new Chart(document.getElementById('cmp-cost'),{type:'bar',data:{labels:['⛽ بنزين\nأعلى','⛽ بنزين\nأدنى','🚛 ديزل\nأعلى','🚛 ديزل\nأدنى'],datasets:[{data:[16121,3412,39149,6596],backgroundColor:['#f59e0b','#fde68a','#1a1a1a','#6b7280'],borderRadius:8,barThickness:50}]},options:{...CD_BASE,plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>d.parsed.y.toLocaleString()+' ريال'}}}}});
+let cmpLiters=new Chart(document.getElementById('cmp-liters'),{type:'bar',data:{labels:['⛽ بنزين\nأعلى','⛽ بنزين\nأدنى','🚛 ديزل\nأعلى','🚛 ديزل\nأدنى'],datasets:[{data:[7426,1451,21373,3737],backgroundColor:['#f59e0b','#fde68a','#1a1a1a','#6b7280'],borderRadius:8,barThickness:50}]},options:{...CD_BASE,plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>d.parsed.y.toLocaleString()+' لتر'}}}}});
+
+const pTypes={};DATA.filter(r=>r.fuel==='petrol').forEach(r=>{pTypes[r.vtype]=(pTypes[r.vtype]||0)+1});
+const dTypes={};DATA.filter(r=>r.fuel==='diesel').forEach(r=>{dTypes[r.vtype]=(dTypes[r.vtype]||0)+1});
+let petrolTypes=new Chart(document.getElementById('petrol-types'),{type:'doughnut',data:{labels:Object.keys(pTypes),datasets:[{data:Object.values(pTypes),backgroundColor:['#1a1a1a','#f59e0b','#6b7280','#d1d5db','#fde68a'],borderWidth:3,borderColor:'#ffffff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{family:'Tajawal',size:11},boxWidth:10,padding:12}}},animation:{duration:900}}});
+let dieselTypes=new Chart(document.getElementById('diesel-types'),{type:'doughnut',data:{labels:Object.keys(dTypes),datasets:[{data:Object.values(dTypes),backgroundColor:['#1a1a1a','#f59e0b','#6b7280','#d1d5db'],borderWidth:3,borderColor:'#ffffff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#666',font:{family:'Tajawal',size:11},boxWidth:10,padding:12}}},animation:{duration:900}}});
+
+const top10=[...DATA].sort((a,b)=>b.liters-a.liters).slice(0,10);
+let top10Chart=new Chart(document.getElementById('top10-chart'),{type:'bar',data:{labels:top10.map(r=>r.plate),datasets:[{label:'استهلاك (لتر)',data:top10.map(r=>r.liters),backgroundColor:top10.map(r=>r.fuel==='diesel'?'#1a1a1a':'#f59e0b'),borderRadius:6,barThickness:30}]},options:{...CD_BASE,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#aaa',font:{family:'Tajawal',size:9}},grid:{display:false}},y:{ticks:{color:'#aaa',font:{family:'Tajawal',size:9}},grid:{color:'#f5f5f5'}}}}});
+
+// Fleet scatter
+let fleetScatter=new Chart(document.getElementById('fleet-scatter'),{type:'scatter',data:{datasets:[
+  {label:'بنزين',data:DATA.filter(r=>r.fuel==='petrol').map(r=>({x:r.total_cost,y:r.liters})),backgroundColor:'rgba(245,158,11,0.7)',pointRadius:5},
+  {label:'ديزل',data:DATA.filter(r=>r.fuel==='diesel').map(r=>({x:r.total_cost,y:r.liters})),backgroundColor:'rgba(26,26,26,0.6)',pointRadius:5},
+]},options:{...CD_BASE,plugins:{legend:{display:true,position:'top',labels:{color:'#666',font:{family:'Tajawal',size:10},boxWidth:8}}},scales:{x:{title:{display:true,text:'التكلفة (ريال)',font:{size:10,family:'Tajawal'},color:'#aaa'},ticks:{color:'#aaa',font:{family:'Tajawal',size:9}},grid:{color:'#f5f5f5'}},y:{title:{display:true,text:'الاستهلاك (لتر)',font:{size:10,family:'Tajawal'},color:'#aaa'},ticks:{color:'#aaa',font:{family:'Tajawal',size:9}},grid:{color:'#f5f5f5'}}}}});
+
+// Fleet trend
+let fleetTrend=new Chart(document.getElementById('fleet-trend'),{type:'line',data:{labels:['يناير','فبراير','مارس','أبريل'],datasets:[
+  {label:'بنزين',data:[17000,18500,19533,18800],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.07)',fill:true,tension:.4,borderWidth:2,pointRadius:3},
+  {label:'ديزل',data:[40000,43000,45745,44500],borderColor:'#1a1a1a',backgroundColor:'rgba(26,26,26,0.05)',fill:true,tension:.4,borderWidth:2,pointRadius:3},
+]},options:{...CD_BASE,plugins:{legend:{display:true,position:'top',labels:{color:'#666',font:{family:'Tajawal',size:10},boxWidth:8}}}}});
+
+// Quality weekly
+let qWeekly=new Chart(document.getElementById('q-weekly'),{type:'bar',data:{labels:['أسبوع 1','أسبوع 2','أسبوع 3','أسبوع 4'],datasets:[
+  {label:'بنزين',data:[4800,5100,4700,4933],backgroundColor:'#f59e0b',borderRadius:5},
+  {label:'ديزل',data:[11000,12000,11200,11545],backgroundColor:'#1a1a1a',borderRadius:5},
+]},options:{...CD_BASE,plugins:{legend:{display:true,position:'top',labels:{color:'#666',font:{family:'Tajawal',size:10},boxWidth:8}}}}});
+
+// Brand chart
+const brands={};DATA.forEach(r=>{if(!brands[r.brand]){brands[r.brand]={total:0,cnt:0}}brands[r.brand].total+=r.total_cost;brands[r.brand].cnt+=1});
+const topBrands=Object.entries(brands).sort((a,b)=>b[1].total/b[1].cnt-a[1].total/a[1].cnt).slice(0,8);
+let brandChart=new Chart(document.getElementById('brand-chart'),{type:'bar',data:{labels:topBrands.map(b=>b[0]),datasets:[{label:'متوسط التكلفة',data:topBrands.map(b=>Math.round(b[1].total/b[1].cnt)),backgroundColor:'#1a1a1a',borderRadius:5}]},options:{...CD_BASE,indexAxis:'y'}});
+
+// Trucks chart
+let trucksChart=new Chart(document.getElementById('trucks-chart'),{type:'bar',data:{labels:trucks.map(r=>r.plate),datasets:[
+  {label:'ليتر',data:trucks.map(r=>r.liters),backgroundColor:'#1a1a1a',borderRadius:4},
+  {label:'ريال',data:trucks.map(r=>r.total_cost),backgroundColor:'rgba(245,158,11,0.7)',borderRadius:4},
+]},options:{...CD_BASE,plugins:{legend:{display:true,position:'top',labels:{color:'#666',font:{family:'Tajawal',size:10},boxWidth:8}}}}});
+
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(m=>m.classList.remove('open'));});
+
+// ════════════════ UPLOADS ════════════════
+const vehicleUploads={};
+DATA.forEach(r=>{vehicleUploads[r.plate]={start:null,end:null,note:'',colL:null};});
+
+function updateOdoCounts(){
+  let done=0,partial=0,none=0;
+  DATA.forEach(r=>{const d=vehicleUploads[r.plate];if(d.start&&d.end)done++;else if(d.start||d.end)partial++;else none++;});
+  const dc=document.getElementById('odo-done-count');
+  const pc=document.getElementById('odo-partial-count');
+  const nc=document.getElementById('odo-none-count');
+  if(dc)dc.textContent=done+' مكتمل';
+  if(pc)pc.textContent=partial+' ناقص';
+  if(nc)nc.textContent=none+' لم يرفع';
+}
+
+function renderUploadVehicles(list){
+  const grid=document.getElementById('vehicles-upload-grid');
+  if(!grid)return;
+  grid.innerHTML=list.map(r=>{
+    const d=vehicleUploads[r.plate];
+    const done=(d.start&&d.end);
+    const partial=(d.start||d.end)&&!done;
+    const statusHTML=done?'<span style="color:var(--green);font-size:11px;font-weight:700">✅ مكتمل</span>':partial?'<span style="color:var(--orange);font-size:11px;font-weight:700">🔄 ناقص</span>':'<span style="color:var(--text3);font-size:11px">⏳ لم يرفع</span>';
+    const colLHTML=d.colL!==null&&d.colL!==undefined?'<div style="display:inline-flex;align-items:center;gap:5px;background:'+(d.colL>=0?'#f0fdf4':'#fff1f0')+';border:1px solid '+(d.colL>=0?'#bbf7d0':'#fecaca')+';border-radius:7px;padding:2px 9px;font-size:11px;font-weight:700;color:'+(d.colL>=0?'var(--green)':'var(--red)')+'">📏 '+(d.colL>=0?'+':'')+d.colL.toLocaleString('ar')+' كم</div>':'';
+    return '<div class="vup-row">'+
+      '<div class="vup-head">'+
+        '<span style="font-size:16px">'+(r.fuel==='diesel'?'🚛':'⛽')+'</span>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--dark);direction:ltr">'+r.plate+'</div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+r.brand+' — '+r.driver+'</div>'+(colLHTML?'<div style="margin-top:4px">'+colLHTML+'</div>':'')+
+        '</div><div>'+statusHTML+'</div></div>'+
+      '<div class="vup-imgs">'+imgSlotHTML(r.plate,'start','📸 أول الشهر',d.start)+imgSlotHTML(r.plate,'end','📸 آخر الشهر',d.end)+'</div>'+
+      '<div style="margin-top:8px"><textarea data-plate="'+r.plate+'" placeholder="ملاحظة اختيارية..." oninput="saveNote(this)" style="width:100%;background:#fafafa;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:Tajawal,sans-serif;outline:none;resize:none;height:44px;color:var(--text)">'+d.note+'</textarea></div>'+
+      '</div>';
+  }).join('')||'<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">لا توجد مركبات</div>';
+  updateOdoCounts();
+}
+
+function imgSlotHTML(plate,type,label,src){
+  const slotId='slot-'+plate.replace(/[^a-zA-Z0-9]/g,'_')+'-'+type;
+  if(src)return '<div class="img-slot has-img" id="'+slotId+'"><button class="img-remove" onclick="removeImg(\''+plate+'\',\''+type+'\')" title="إزالة">✕</button><img src="'+src+'" alt="'+label+'" style="width:100%;height:110px;object-fit:cover;border-radius:8px;display:block"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:9px;text-align:center;padding:3px;font-family:Tajawal">'+label+'</div></div>';
+  return '<div class="img-slot" id="'+slotId+'" onclick="triggerImgUpload(\''+plate+'\',\''+type+'\')"><input type="file" accept="image/*" capture="environment" style="display:none" id="inp-'+slotId+'" onchange="handleImgFile(this,\''+plate+'\',\''+type+'\')"><div style="font-size:22px;margin-bottom:4px">📷</div><div style="font-size:10px;font-weight:700;color:var(--text3)">'+label+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">اضغط لرفع صورة</div></div>';
+}
+
+function triggerImgUpload(plate,type){
+  const slotId='slot-'+plate.replace(/[^a-zA-Z0-9]/g,'_')+'-'+type;
+  document.getElementById('inp-'+slotId)?.click();
+}
+
+function handleImgFile(input,plate,type){
+  const file=input.files[0];if(!file)return;
+  if(file.size>10*1024*1024){toast('⚠️ الصورة أكبر من 10MB');return;}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    vehicleUploads[plate][type]=e.target.result; // حفظ فوري
+    toast('✅ تم حفظ صورة '+plate+' ('+(type==='start'?'أول':'آخر')+' الشهر)');
+    filterUploadVehicles(document.getElementById('plate-search-up')?.value||'',document.getElementById('fuel-filter-up')?.value||'all');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg(plate,type){
+  vehicleUploads[plate][type]=null;
+  toast('🗑️ تم إزالة الصورة');
+  filterUploadVehicles(document.getElementById('plate-search-up')?.value||'',document.getElementById('fuel-filter-up')?.value||'all');
+}
+
+function saveNote(el){vehicleUploads[el.dataset.plate].note=el.value;}
+
+function filterUploadVehicles(q,ff){
+  if(ff===undefined)ff=document.getElementById('fuel-filter-up')?.value||'all';
+  let list=DATA;
+  if(q)list=list.filter(r=>r.plate.includes(q)||r.driver.includes(q)||r.brand.toLowerCase().includes(q.toLowerCase()));
+  if(ff!=='all')list=list.filter(r=>r.fuel===ff);
+  renderUploadVehicles(list);
+}
+
+function highlightVehicle(plate){
+  if(!plate)return;
+  document.getElementById('plate-search-up').value=plate;
+  filterUploadVehicles(plate);
+}
+
+// ── EXCEL REAL PARSING ──
+function handleExcelFile(input){const file=input.files[0];if(!file)return;processExcelFile(file);}
+function handleExcelDrop(e){
+  e.preventDefault();
+  document.getElementById('excel-drop-zone').style.borderColor='';
+  document.getElementById('excel-drop-zone').style.background='#fafafa';
+  const file=e.dataTransfer.files[0];
+  if(!file||!file.name.match(/\.xlsx?$/i)){toast('⚠️ الملف يجب أن يكون Excel');return;}
+  processExcelFile(file);
+}
+
+function processExcelFile(file){
+  if(file.size>15*1024*1024){toast('⚠️ الملف أكبر من 15MB');return;}
+  const dz=document.getElementById('excel-drop-zone');
+  dz.innerHTML='<div style="font-size:28px;margin-bottom:6px">⏳</div><div style="font-size:13px;font-weight:700;color:var(--text2)">جاري قراءة الملف...</div>';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const kb=(file.size/1024).toFixed(0);
+      document.getElementById('excel-filename').textContent=file.name;
+      document.getElementById('excel-filesize').textContent=kb+' KB — '+new Date().toLocaleDateString('ar-SA');
+      document.getElementById('excel-info').style.display='block';
+      document.getElementById('excel-badge').style.display='inline-block';
+      document.getElementById('excel-sheets').innerHTML=wb.SheetNames.map(s=>'<span class="badge b-blue" style="cursor:pointer" onclick="toast(\'📋 ورقة: '+s+'\')">'+ s +'</span>').join('');
+      detectPeriod(wb);
+      extractColumnL(wb);
+      dz.innerHTML='<div style="font-size:36px;margin-bottom:8px">📗</div><div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">'+file.name+'</div><div style="font-size:11px;color:var(--text3)">اضغط لاستبدال الملف</div><input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">';
+      const hist=document.getElementById('excel-history');
+      const row=document.createElement('div');row.className='s-file-row';
+      row.innerHTML='<div>📗 <span style="font-weight:600">'+file.name+'</span><span style="font-size:10px;color:var(--text3);margin-right:6px">'+new Date().toLocaleDateString('ar-SA')+'</span></div><div style="display:flex;gap:6px"><span class="badge b-green">جديد</span><span style="font-size:10px;color:var(--text3)">'+kb+' KB</span></div>';
+      hist.insertBefore(row,hist.firstChild);
+      toast('✅ تم رفع وقراءة: '+file.name);
+    }catch(err){
+      console.error(err);toast('❌ تعذّر قراءة الملف');
+      dz.innerHTML='<div style="font-size:36px;margin-bottom:8px">📂</div><div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">اسحب ملف Excel هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text3)">.xlsx / .xls</div><input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function detectPeriod(wb){
+  try{
+    const sheet=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+    const dates=[];
+    rows.forEach(row=>row.forEach(c=>{
+      if(c instanceof Date&&!isNaN(c))dates.push(c);
+      else if(typeof c==='number'&&c>40000&&c<50000){try{const d=XLSX.SSF.parse_date_code(c);if(d)dates.push(new Date(d.y,d.m-1,d.d));}catch(e){}}
+    }));
+    if(dates.length<2)return;
+    dates.sort((a,b)=>a-b);
+    const first=dates[0],last=dates[dates.length-1];
+    const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    const firstStr=first.getDate()+' '+months[first.getMonth()]+' '+first.getFullYear();
+    const lastStr=last.getDate()+' '+months[last.getMonth()]+' '+last.getFullYear();
+    const monthName=months[first.getMonth()];
+    const pa=document.getElementById('period-alert');if(pa){pa.style.display='block';}
+    const pt=document.getElementById('period-text');if(pt)pt.textContent='شهر '+monthName+' — من '+firstStr+' إلى '+lastStr;
+    const badge=document.getElementById('upload-period-badge');if(badge){badge.style.display='block';badge.innerHTML='📅 '+monthName+' — '+firstStr+' → '+lastStr;}
+  }catch(e){console.warn('period:',e);}
+}
+
+function extractColumnL(wb){
+  try{
+    const results=[];
+    wb.SheetNames.forEach(sName=>{
+      const sheet=wb.Sheets[sName];
+      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+      if(rows.length<2)return;
+      // Find first non-empty row with col L (index 11)
+      let hRow=-1;
+      for(let i=0;i<Math.min(10,rows.length);i++){if(rows[i][11]!==undefined&&rows[i][11]!==''){hRow=i;break;}}
+      if(hRow<0)return;
+      for(let i=hRow+1;i<rows.length;i++){
+        const row=rows[i];
+        const plateRaw=String(row[1]||row[0]||'').trim();
+        const colL=parseFloat(row[11]);
+        if(!plateRaw||isNaN(colL))continue;
+        const matched=DATA.find(d=>d.plate&&d.plate.replace(/\s/g,'').toLowerCase().includes(plateRaw.replace(/\s/g,'').toLowerCase()));
+        if(matched)vehicleUploads[matched.plate].colL=colL;
+        results.push({plate:plateRaw,val:colL,sheet:sName,matched:matched?.plate||null});
+      }
+    });
+    const sec=document.getElementById('col-l-section');if(!sec)return;
+    if(!results.length){sec.style.display='none';return;}
+    sec.style.display='block';
+    const cnt=document.getElementById('col-l-count');if(cnt)cnt.textContent=results.length+' مركبة';
+    const tbl=document.getElementById('col-l-table');
+    if(tbl){
+      const headerCells=['اللوحة','الفارق','الورقة','مرتبط'];
+      let html='<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="background:var(--bg)">';
+      headerCells.forEach(h=>{html+='<th style="padding:9px 12px;text-align:right;font-size:10.5px;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border)">'+h+'</th>';});
+      html+='</tr></thead><tbody>';
+      results.forEach(r=>{
+        const col=r.val>=0?'var(--green)':'var(--red)';
+        const sign=r.val>=0?'+':'';
+        html+='<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="highlightVehicle(this.dataset.plate)" data-plate="'+(r.matched||'')+'">';
+        html+='<td style="padding:9px 12px"><span style="font-size:11px;background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:5px;direction:ltr;display:inline-block;font-weight:600">'+r.plate+'</span></td>';
+        html+='<td style="padding:9px 12px"><span style="font-size:14px;font-weight:900;color:'+col+'">'+sign+r.val.toLocaleString('ar')+' كم</span></td>';
+        html+='<td style="padding:9px 12px;font-size:11.5px;color:var(--text3)">'+r.sheet+'</td>';
+        html+='<td style="padding:9px 12px">'+(r.matched?'<span class="badge b-green" style="font-size:10px">✓ '+r.matched+'</span>':'<span class="badge b-gray" style="font-size:10px">غير مرتبط</span>')+'</td>';
+        html+='</tr>';
+      });
+      html+='</tbody></table>';
+      tbl.innerHTML=html;
+    }
+    filterUploadVehicles(document.getElementById('plate-search-up')?.value||'',document.getElementById('fuel-filter-up')?.value||'all');
+  }catch(e){console.warn('colL:',e);}
+}
+
+function removeExcel(){
+  document.getElementById('excel-info').style.display='none';
+  document.getElementById('excel-badge').style.display='none';
+  try{document.getElementById('period-alert').style.display='none';}catch(e){}
+  try{document.getElementById('col-l-section').style.display='none';}catch(e){}
+  try{document.getElementById('upload-period-badge').style.display='none';}catch(e){}
+  const dz=document.getElementById('excel-drop-zone');
+  if(dz)dz.innerHTML='<div style="font-size:36px;margin-bottom:8px">📂</div><div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">اسحب ملف Excel هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text3)">.xlsx / .xls — حجم أقصى 15MB</div><input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">';
+  DATA.forEach(r=>{vehicleUploads[r.plate].colL=null;});
+  filterUploadVehicles('');
+  toast('🗑️ تم إزالة الملف');
+}
+
+filterUploadVehicles('');
+
+// ════════════════ THEME ════════════════
+let _currentTheme='light';
+let _autoMQ=null;
+
+function setTheme(mode){
+  _currentTheme=mode;
+  const isDark=(mode==='dark')||(mode==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  // Update button borders
+  ['light','dark','auto'].forEach(m=>{
+    const el=document.getElementById('theme-'+m);
+    if(el){
+      el.style.border=m===mode?'2.5px solid var(--orange)':'1px solid var(--border)';
+      el.style.transform=m===mode?'scale(1.04)':'scale(1)';
+    }
+  });
+
+  if(mode==='light'){
+    applyTheme('light');
+    document.getElementById('current-theme-lbl').textContent='☀️ فاتح';
+    toast('☀️ تم تفعيل الوضع الفاتح');
+    if(_autoMQ){_autoMQ.removeEventListener('change',_autoHandler);_autoMQ=null;}
+    resetChartsLight();
+  } else if(mode==='dark'){
+    applyTheme('dark');
+    document.getElementById('current-theme-lbl').textContent='🌙 داكن';
+    toast('🌙 تم تفعيل الوضع الداكن');
+    if(_autoMQ){_autoMQ.removeEventListener('change',_autoHandler);_autoMQ=null;}
+    updateChartsTheme(true);
+  } else {
+    _autoMQ=window.matchMedia('(prefers-color-scheme: dark)');
+    applyTheme(_autoMQ.matches?'dark':'light');
+    _autoMQ.addEventListener('change',_autoHandler);
+    document.getElementById('current-theme-lbl').textContent='💻 تلقائي';
+    toast('💻 يتبع إعداد الجهاز تلقائياً');
+    updateChartsTheme(_autoMQ.matches);
+  }
+}
+
+function resetChartsLight(){
+  const BLACK='#1a1a1a', GRAY='#6b7280', GRAY_L='#d1d5db', WHITE='#ffffff';
+  const DBGL='rgba(26,26,26,0.05)';
+  function upd(id,fn){try{const ch=Chart.getChart(id);if(!ch)return;fn(ch);ch.update();}catch(e){}}
+  upd('weekly-chart', ch=>{ch.data.datasets[1].borderColor=BLACK; ch.data.datasets[1].backgroundColor=DBGL;});
+  upd('month-donut',  ch=>{ch.data.datasets[0].backgroundColor=[BLACK,'#f59e0b'];});
+  upd('cmp-cost',     ch=>{ch.data.datasets[0].backgroundColor=['#f59e0b','#fde68a',BLACK,GRAY];});
+  upd('cmp-liters',   ch=>{ch.data.datasets[0].backgroundColor=['#f59e0b','#fde68a',BLACK,GRAY];});
+  upd('petrol-types', ch=>{ch.data.datasets[0].backgroundColor=[BLACK,'#f59e0b',GRAY,GRAY_L,'#fde68a']; ch.data.datasets[0].borderColor=WHITE;});
+  upd('diesel-types', ch=>{ch.data.datasets[0].backgroundColor=[BLACK,'#f59e0b',GRAY,GRAY_L]; ch.data.datasets[0].borderColor=WHITE;});
+  upd('top10-chart',  ch=>{ch.data.datasets[0].backgroundColor=top10.map(r=>r.fuel==='diesel'?BLACK:'#f59e0b');});
+  upd('fleet-scatter',ch=>{ch.data.datasets[1].backgroundColor='rgba(26,26,26,0.6)';});
+  upd('fleet-trend',  ch=>{ch.data.datasets[1].borderColor=BLACK; ch.data.datasets[1].backgroundColor=DBGL;});
+  upd('q-weekly',     ch=>{ch.data.datasets[1].backgroundColor=BLACK;});
+  upd('brand-chart',  ch=>{ch.data.datasets[0].backgroundColor=BLACK;});
+  upd('trucks-chart', ch=>{ch.data.datasets[0].backgroundColor=BLACK;});
+
+  // Scale/legend/tooltip colors reset
+  const tc='#aaaaaa', gc='#f5f5f5', lgc='#666666';
+  try{Object.values(Chart.instances).forEach(chart=>{
+    try{
+      if(chart.options.scales){Object.values(chart.options.scales).forEach(s=>{if(s.ticks)s.ticks.color=tc;if(s.grid)s.grid.color=gc;if(s.title)s.title.color=tc;});}
+      if(chart.options.plugins?.legend?.labels)chart.options.plugins.legend.labels.color=lgc;
+      if(chart.options.plugins?.tooltip){chart.options.plugins.tooltip.backgroundColor='#fff';chart.options.plugins.tooltip.titleColor='#111';chart.options.plugins.tooltip.bodyColor='#444';chart.options.plugins.tooltip.borderColor='#e8e8e8';chart.options.plugins.tooltip.borderWidth=1;}
+      chart.update('none');
+    }catch(e){}
+  });}catch(e){}
+}
+
+function _autoHandler(e){
+  applyTheme(e.matches?'dark':'light');
+  updateChartsTheme(e.matches);
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  // Update FleetIQ logo icon color
+  const logo=document.querySelector('.logo-mark');
+  if(logo)logo.style.filter=t==='dark'?'brightness(0.9)':'none';
+}
+
+function updateChartsTheme(isDark){
+  const tc  = isDark ? '#9099b5' : '#aaaaaa';
+  const gc  = isDark ? '#2a2f42' : '#f5f5f5';
+  const lgc = isDark ? '#9099b5' : '#666666';
+  const dc  = isDark ? '#6ee7f7' : '#1a1a1a';
+  const dbg = isDark ? 'rgba(110,231,247,0.10)' : 'rgba(26,26,26,0.05)';
+  const gr  = isDark ? '#7a82a8' : '#6b7280';
+  const grl = isDark ? '#3a4060' : '#d1d5db';
+  const bdr = isDark ? '#1c2030' : '#ffffff';
+
+  // دالة مساعدة — تحديث chart عبر id الـ canvas
+  function upd(canvasId, fn){
+    try{
+      const ch = Chart.getChart(canvasId);
+      if(!ch) return;
+      fn(ch);
+      ch.update();
+    }catch(e){}
+  }
+
+  upd('weekly-chart', ch=>{ch.data.datasets[1].borderColor=dc; ch.data.datasets[1].backgroundColor=dbg;});
+  upd('month-donut',  ch=>{ch.data.datasets[0].backgroundColor=[dc,'#f59e0b'];});
+  upd('cmp-cost',     ch=>{ch.data.datasets[0].backgroundColor=['#f59e0b','#fde68a',dc,gr];});
+  upd('cmp-liters',   ch=>{ch.data.datasets[0].backgroundColor=['#f59e0b','#fde68a',dc,gr];});
+  upd('petrol-types', ch=>{ch.data.datasets[0].backgroundColor=[dc,'#f59e0b',gr,grl,'#fde68a']; ch.data.datasets[0].borderColor=bdr;});
+  upd('diesel-types', ch=>{ch.data.datasets[0].backgroundColor=[dc,'#f59e0b',gr,grl]; ch.data.datasets[0].borderColor=bdr;});
+  upd('top10-chart',  ch=>{ch.data.datasets[0].backgroundColor=top10.map(r=>r.fuel==='diesel'?dc:'#f59e0b');});
+  upd('fleet-scatter',ch=>{ch.data.datasets[1].backgroundColor=isDark?'rgba(110,231,247,0.7)':'rgba(26,26,26,0.6)';});
+  upd('fleet-trend',  ch=>{ch.data.datasets[1].borderColor=dc; ch.data.datasets[1].backgroundColor=dbg;});
+  upd('q-weekly',     ch=>{ch.data.datasets[1].backgroundColor=dc;});
+  upd('brand-chart',  ch=>{ch.data.datasets[0].backgroundColor=dc;});
+  upd('trucks-chart', ch=>{ch.data.datasets[0].backgroundColor=dc;});
+
+  // كل الـ charts: المحاور + Legend + Tooltip
+  try{
+    Object.values(Chart.instances).forEach(chart=>{
+      try{
+        if(chart.options.scales){Object.values(chart.options.scales).forEach(s=>{if(s.ticks)s.ticks.color=tc;if(s.grid)s.grid.color=gc;if(s.title)s.title.color=tc;});}
+        if(chart.options.plugins?.legend?.labels)chart.options.plugins.legend.labels.color=lgc;
+        if(chart.options.plugins?.tooltip){
+          chart.options.plugins.tooltip.backgroundColor=isDark?'#1c2030':'#fff';
+          chart.options.plugins.tooltip.titleColor=isDark?'#e8eaf0':'#111';
+          chart.options.plugins.tooltip.bodyColor=isDark?'#9099b5':'#444';
+          chart.options.plugins.tooltip.borderColor=isDark?'#2a2f42':'#e8e8e8';
+          chart.options.plugins.tooltip.borderWidth=1;
+        }
+        chart.update('none');
+      }catch(e){}
+    });
+  }catch(e){}
+}
+
+// ════════════════ DANGER ZONE ════════════════
+function dangerClearData(){
+  if(!confirm('⚠️ تحذير: سيتم مسح جميع بيانات الوقود والحركات والمركبات.\n\nهل أنت متأكد تماماً؟')) return;
+  const confirm2 = prompt('للتأكيد، اكتب كلمة "حذف" في الخانة:');
+  if(confirm2 !== 'حذف'){ toast('❌ تم إلغاء العملية — الكلمة غير صحيحة'); return; }
+  try{
+    // مسح vehicleUploads
+    Object.keys(vehicleUploads).forEach(k=>{vehicleUploads[k]={start:null,end:null,note:'',colL:null};});
+    // إعادة ضبط Excel
+    try{removeExcel();}catch(e){}
+    toast('✅ تم مسح جميع البيانات المؤقتة بنجاح','');
+    setTimeout(()=>{ goPageById('overview'); filterUploadVehicles(''); },500);
+  }catch(e){
+    toast('❌ حدث خطأ: '+e.message);
+    console.error(e);
+  }
+}
+
+function dangerExportData(){
+  try{
+    const exportObj = {
+      date: new Date().toLocaleString('ar-SA'),
+      vehicles: DATA.map(v=>({...v})),
+      odometer: Object.entries(vehicleUploads).map(([plate,d])=>({
+        plate, note:d.note, colL:d.colL,
+        hasStartImg:!!d.start, hasEndImg:!!d.end
+      }))
+    };
+    const json = JSON.stringify(exportObj, null, 2);
+    const blob = new Blob([json],{type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'FleetIQ_data_'+new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')+'.json';
+    a.click();
+    toast('✅ تم تصدير البيانات بنجاح');
+  }catch(e){
+    toast('❌ فشل التصدير: '+e.message);
+  }
+}
+
+function dangerResetSettings(){
+  if(!confirm('سيتم إعادة ضبط الإعدادات للقيم الافتراضية. هل تريد المتابعة؟')) return;
+  try{
+    applyTheme('light');
+    _currentTheme='light';
+    ['theme-light','theme-dark','theme-auto'].forEach((id,i)=>{
+      const el=document.getElementById(id);
+      if(el){ el.style.border=i===0?'2.5px solid var(--orange)':'1px solid var(--border)'; el.style.transform=i===0?'scale(1.04)':'scale(1)'; }
+    });
+    const lbl=document.getElementById('current-theme-lbl');
+    if(lbl)lbl.textContent='☀️ فاتح';
+    resetChartsLight();
+    toast('✅ تم إعادة ضبط الإعدادات');
+  }catch(e){
+    toast('❌ خطأ: '+e.message);
+  }
+}
+
+// ════ GITHUB PAGES SESSION CHECK ════
+(function(){
+  try{
+    const s=JSON.parse(localStorage.getItem('fiq_gh_session'));
+    // إذا لا جلسة أو انتهت (24 ساعة) → اذهب لصفحة الدخول
+    if(!s||!s.id||(Date.now()-s.ts)>86400000){
+      // لكن على GitHub Pages: إذا فتح المستخدم الرابط مباشرة نعطيه demo session
+      const autoSession={id:1,name:'مدير الأسطول',role:'admin',ts:Date.now()};
+      localStorage.setItem('fiq_gh_session',JSON.stringify(autoSession));
+    }
+  }catch(e){
+    // في حال فشل localStorage (Safari private) — نكمل بدون redirect
+    console.warn('Session check failed:', e);
+  }
+})();
+
+// ════ INIT ════
+filterUploadVehicles('');
+
+
+</script>
+</body>
+</html>

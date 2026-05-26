@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FleetIQ — تسجيل الدخول</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal',sans-serif;direction:rtl;min-height:100vh;background:#0f1117;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.18;animation:bf 16s ease-in-out infinite}
+.b1{width:600px;height:600px;background:#f59e0b;top:-200px;right:-100px}
+.b2{width:500px;height:500px;background:#1a1a2e;bottom:-150px;left:-80px;animation-delay:-7s;opacity:.35}
+.b3{width:300px;height:300px;background:#3b82f6;top:55%;left:40%;animation-delay:-12s;opacity:.1}
+@keyframes bf{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-18px) scale(1.03)}}
+.card{position:relative;z-index:1;background:rgba(255,255,255,.05);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:44px 40px;width:420px;box-shadow:0 28px 72px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:30px}
+.logo-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(145deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 28px rgba(245,158,11,.4)}
+.logo-name{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.35);font-weight:500;margin-top:2px}
+.divider{height:1px;background:rgba(255,255,255,.07);margin-bottom:28px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.38);margin-bottom:7px;letter-spacing:.5px}
+.field input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px 15px;font-size:14px;color:#fff;font-family:'Tajawal',sans-serif;outline:none;transition:all .2s}
+.field input:focus{border-color:#f59e0b;background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+.field input::placeholder{color:rgba(255,255,255,.2)}
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:11px 14px;font-size:13px;color:#fca5a5;margin-bottom:14px;display:none;font-weight:500}
+.err.show{display:block}
+.submit{width:100%;background:linear-gradient(145deg,#f59e0b,#d97706);color:#000;border:none;border-radius:11px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif;margin-top:6px;transition:all .2s;box-shadow:0 6px 20px rgba(245,158,11,.35)}
+.submit:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(245,158,11,.45)}
+.submit:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.hint{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.hint-label{font-size:11.5px;color:rgba(255,255,255,.25)}
+.hint-code{font-size:11.5px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:5px 12px;border-radius:7px;cursor:pointer;transition:all .15s;direction:ltr;font-weight:600}
+.hint-code:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="card">
+  <div class="logo-row">
+    <div class="logo-icon">⛽</div>
+    <div>
+      <div class="logo-name">FleetIQ</div>
+      <div class="logo-sub">نظام إدارة وقود الأسطول</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div id="err" class="err"></div>
+  <div class="field">
+    <label>اسم المستخدم</label>
+    <input id="u" type="text" placeholder="أدخل اسم المستخدم" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>كلمة المرور</label>
+    <input id="p" type="password" placeholder="أدخل كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <button class="submit" id="btn" onclick="doLogin()">تسجيل الدخول</button>
+  <div class="hint">
+    <span class="hint-label">للتجربة:</span>
+    <span class="hint-code" onclick="document.getElementById('u').value='admin';document.getElementById('p').value='1234'">admin / 1234</span>
+  </div>
+</div>
+<script>
+// ─── المستخدمون ───
+const USERS=[
+  {id:1,name:'مدير الأسطول',username:'admin',password:'1234',role:'admin'},
+];
+
+// إذا كان مسجّل → انتقل مباشرة
+try{const s=JSON.parse(localStorage.getItem('fiq_gh_session'));if(s&&s.id)window.location.replace('index.html');}catch(e){}
+
+function showErr(msg){const e=document.getElementById('err');e.textContent='⚠️ '+msg;e.classList.add('show');}
+function clearErr(){document.getElementById('err').classList.remove('show');}
+
+function doLogin(){
+  clearErr();
+  const u=document.getElementById('u').value.trim();
+  const p=document.getElementById('p').value.trim();
+  const btn=document.getElementById('btn');
+  if(!u){showErr('أدخل اسم المستخدم');return;}
+  if(!p){showErr('أدخل كلمة المرور');return;}
+  btn.disabled=true;btn.textContent='⏳ جاري التحقق...';
+  setTimeout(()=>{
+    try{
+      const found=USERS.find(x=>x.username===u&&x.password===p);
+      if(!found){showErr('اسم المستخدم أو كلمة المرور غير صحيحة');btn.disabled=false;btn.textContent='تسجيل الدخول';return;}
+      // localStorage بدل sessionStorage — يبقى حتى بعد إغلاق المتصفح
+      localStorage.setItem('fiq_gh_session',JSON.stringify({id:found.id,name:found.name,role:found.role,ts:Date.now()}));
+      btn.textContent='✓ جاري التحميل...';
+      setTimeout(()=>window.location.replace('index.html'),300);
+    }catch(err){showErr('خطأ: '+err.message);btn.disabled=false;btn.textContent='تسجيل الدخول';}
+  },400);
+}
+</script>
+</body>
+</html>
